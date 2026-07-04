@@ -1,0 +1,3153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#7FCDFF"/>
+<title>MVRLA-AI · CMMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --bg:#DFF7FF;--card:#FFFFFF;--primary:#7FCDFF;--primary-d:#4DA9E8;--primary-dd:#2980b9;
+  --ink:#0B2233;--ink2:#2C4A60;--muted:#7794A8;--line:rgba(11,34,51,.08);
+  --red:#E5484D;--red-s:#FDECEC;--amber:#F2A33C;--amber-s:#FEF4E7;
+  --green:#3CB371;--green-s:#E9F8F0;--blue:#3E8FE0;--blue-s:#EAF3FC;--purple:#8B7CF6;--purple-s:#F0EDFD;
+  --R:22px;--Rs:16px;
+  --grad:linear-gradient(135deg,#4DA9E8,#2980b9);
+}
+body.dark{
+  --bg:#0A1622;--card:#10202F;--primary:#2980b9;--primary-d:#4DA9E8;--primary-dd:#7FCDFF;
+  --ink:#E6F2F8;--ink2:#9FBACB;--muted:#5C7689;--line:rgba(255,255,255,.07);
+  --red-s:rgba(229,72,77,.14);--amber-s:rgba(242,163,60,.14);--green-s:rgba(60,179,113,.14);
+  --blue-s:rgba(62,143,224,.14);--purple-s:rgba(139,124,246,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);min-height:100vh;overflow-x:hidden;transition:background .3s}
+body:not(.dark){background:linear-gradient(160deg,#EAFAFF,#DFF7FF,#9FD8FF);background-attachment:fixed}
+body.dark{background:linear-gradient(160deg,#0A1622,#0C1A28,#08131D);background-attachment:fixed}
+.mono{font-family:'JetBrains Mono',monospace}
+.hidden{display:none!important}
+.flex{display:flex}.col{flex-direction:column}.ac{align-items:center}.jb{justify-content:space-between}.jc{justify-content:center}
+.g2{gap:8px}.g3{gap:12px}.wfull{width:100%}.tc{text-align:center}.fw{flex-wrap:wrap}
+.b{font-weight:700}.bb{font-weight:900}.t-sm{font-size:13px}.t-xs{font-size:11px}.t-lg{font-size:18px}
+.grow{flex:1;min-width:0}
+.card{background:var(--card);border-radius:var(--R);padding:18px;box-shadow:0 10px 28px -12px rgba(41,128,185,.2);border:1px solid var(--line)}
+.btn{border:none;padding:15px 22px;border-radius:15px;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-family:inherit}
+.btn:active{transform:scale(.96)}
+.btn-pri{background:var(--grad);color:#fff;box-shadow:0 8px 20px -8px rgba(41,128,185,.5)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.field{width:100%;padding:15px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);font-size:16px;outline:none;font-family:inherit;color:var(--ink);transition:.2s}
+.field:focus{border-color:var(--primary-d);box-shadow:0 0 0 4px rgba(127,205,255,.25)}
+.lbl{display:block;font-size:11px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+.pill{font-size:10.5px;font-weight:800;padding:5px 11px;border-radius:99px;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px}
+.pill-blue{background:var(--blue-s);color:var(--blue)}.pill-green{background:var(--green-s);color:var(--green)}
+.pill-amber{background:var(--amber-s);color:var(--amber)}.pill-red{background:var(--red-s);color:var(--red)}.pill-purple{background:var(--purple-s);color:var(--purple)}
+.app{max-width:480px;margin:0 auto;min-height:100vh;position:relative}
+.screen{display:none;padding:20px;padding-bottom:120px;animation:fade .3s ease}
+.screen.active{display:block}
+.login-screen{padding:20px;min-height:100vh}
+.login-screen.active{display:flex;flex-direction:column;justify-content:center}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.icon-btn{width:44px;height:44px;border-radius:13px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--primary-dd);flex-shrink:0}
+.icon-btn:active{transform:scale(.9)}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.kpi{background:var(--card);border-radius:var(--Rs);padding:15px;border:1px solid var(--line);position:relative;overflow:hidden;animation:pop .4s ease both}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.kpi .v{font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;line-height:1}
+.kpi .l{font-size:11px;font-weight:700;color:var(--muted);margin-top:5px;text-transform:uppercase;letter-spacing:.03em}
+.kpi .ic{position:absolute;right:12px;top:12px;font-size:18px;opacity:.5}
+
+/* NAV — evenly aligned, equal-width buttons */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;align-items:flex-end;padding:11px 6px calc(13px + env(safe-area-inset-bottom));z-index:50}
+.nav-btn{background:none;border:none;color:var(--muted);font-size:10px;font-weight:800;display:flex;flex:1 1 0;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;font-family:inherit;padding:4px 2px;min-width:0}
+.nav-btn svg{width:24px;height:24px;stroke-width:2.2;flex-shrink:0}
+.nav-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nav-btn.active{color:var(--primary-dd)}
+.fab{flex:0 0 60px;width:60px;height:60px;border-radius:20px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 4px;margin-top:-28px;box-shadow:0 12px 26px rgba(41,128,185,.45);border:4px solid var(--card)}
+.fab svg{width:28px;height:28px;stroke-width:2.6}
+.fab:active{transform:scale(.9)}
+
+/* HORIZONTAL SLIDER (Machine Health / History) */
+.slider{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.slider::-webkit-scrollbar{display:none}
+.slide-card{scroll-snap-align:start;flex:0 0 auto;background:var(--card);border-radius:var(--R);padding:16px;border:1px solid var(--line);box-shadow:0 10px 24px -12px rgba(41,128,185,.2)}
+/* ═══════════ HEALTH MONITOR — HEATMAP GRID ═══════════
+   One small colored tile per machine, grouped by line.
+   Color = live health (green/amber/red). Tap any tile → machine drawer.
+   One-glance view of entire area health — no scroll, no confusion. */
+
+.heatmap-wrap{padding:12px 14px 10px}
+
+/* Summary pill bar at the top of the heatmap */
+.hm-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line);align-items:center}
+.hm-pill{flex:1 1 0;min-width:70px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:8px 10px;text-align:center}
+.hm-pill .hm-n{font-size:18px;font-weight:900;font-family:'JetBrains Mono',monospace;line-height:1}
+.hm-pill .hm-l{font-size:9.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+
+/* Legend */
+.hm-legend{display:flex;gap:12px;margin-bottom:14px;font-size:10px;font-weight:700;color:var(--muted)}
+.hm-legend span{display:flex;align-items:center;gap:5px}
+.hm-legend .swatch{width:10px;height:10px;border-radius:3px}
+
+/* 🏥 Line Summary Style (Updated) */
+.line-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(41,128,185,0.05);
+  animation: hmPop .4s cubic-bezier(.16,1,.3,1) both;
+}
+.line-card:active{ transform: scale(0.98); }
+.line-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 6px;
+}
+.line-card.ok::before { background: var(--green); }
+.line-card.warn::before { background: var(--amber); }
+.line-card.crit::before { background: var(--red); }
+
+.line-info .line-title { font-size: 16px; font-weight: 800; color: var(--ink); }
+.line-info .line-stat-text { font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+.line-pct-text { font-size: 20px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+
+@keyframes hmPop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* Machine expanded drawer area */
+.line-expand-wrap { margin-bottom: 12px; }
+.mc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 10px;
+  margin-top: 2px;
+  padding: 12px 10px 20px;
+  background: var(--bg2);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border: 1px solid var(--line);
+  border-top: none;
+  animation: slideDown .3s ease-out;
+}
+@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+.mc-tile {
+  aspect-ratio: 1/1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+  transition: transform 0.2s;
+}
+.mc-tile:active { transform: scale(0.9); }
+.mc-tile.ok { background: linear-gradient(135deg,#34d399,#10b981); }
+.mc-tile.warn { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+.mc-tile.crit { background: linear-gradient(135deg,#f87171,#dc2626); }
+.mc-tile-label { font-size: 20px; opacity: 1; margin-bottom: 15px; text-transform: uppercase; }
+.mc-tile-pct { font-size: 20
+px; font-weight: 950; font-family: 'JetBrains Mono'; }
+
+/* ═══ GAME HUD — Animated Equipment Hero ═══ */
+.hero-score{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;margin-bottom:16px;position:relative;overflow:hidden;min-height:150px}
+.hero-score::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(41,128,185,.07),transparent 65%);pointer-events:none}
+/* equipment SVG canvas */
+.hud-canvas{position:relative;width:100%;height:140px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hud-canvas svg{width:100%;height:100%}
+/* gear spin — speed changes with health */
+.gear-main{transform-origin:50px 50px;animation:gearSpin var(--gear-speed,2s) linear infinite}
+.gear-small{transform-origin:88px 50px;animation:gearSpin var(--gear-speed,2s) linear infinite reverse}
+.gear-tiny{transform-origin:30px 82px;animation:gearSpin calc(var(--gear-speed,2s)*1.5) linear infinite}
+@keyframes gearSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+/* piston up-down */
+.piston-arm{animation:pistonMove var(--piston-speed,1.2s) ease-in-out infinite}
+@keyframes pistonMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+/* belt conveyor — moves left */
+.belt-seg{animation:beltMove var(--belt-speed,1.6s) linear infinite}
+@keyframes beltMove{from{transform:translateX(0)}to{transform:translateX(-32px)}}
+/* electrical arc flash */
+.elec-arc{animation:arcFlash var(--arc-speed,0.8s) ease-in-out infinite;transform-origin:center}
+@keyframes arcFlash{0%,100%{opacity:.2;transform:scale(.9)}50%{opacity:1;transform:scale(1.12)}}
+/* circuit pulse */
+.circ-pulse{animation:circPulse var(--circ-speed,1s) ease-in-out infinite}
+@keyframes circPulse{0%,100%{stroke-width:2;opacity:.4}50%{stroke-width:4;opacity:1}}
+/* coil spin */
+.coil-rotor{transform-origin:80px 50px;animation:gearSpin var(--gear-speed,1.8s) linear infinite}
+/* danger = red tint overlay */
+.hud-danger-overlay{position:absolute;inset:0;border-radius:14px;pointer-events:none;animation:dangerOvl 1.4s ease-in-out infinite;opacity:0}
+.hud-canvas.hud-crit .hud-danger-overlay{opacity:1}
+@keyframes dangerOvl{0%,100%{box-shadow:inset 0 0 0 2px rgba(229,72,77,.3)}50%{box-shadow:inset 0 0 0 3px rgba(229,72,77,.85)}}
+/* right panel */
+.hs-side{display:flex;flex-direction:column;justify-content:center;gap:6px}
+.hs-clock{font-size:26px;font-weight:900;letter-spacing:.02em;line-height:1;font-family:'JetBrains Mono',monospace}
+.hs-shift{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:900;padding:4px 12px;border-radius:99px;background:var(--blue-s);color:var(--blue);width:fit-content}
+/* 🏥 Health Monitor — bigger / bold title */
+.hm-title{font-size:25
+px!important;font-weight:900!important;letter-spacing:.04em}
+
+/* ═══ ON-DUTY SUPERVISORS HUD ═══ */
+.duty-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.duty-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.duty-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);position:relative;overflow:hidden;transition:.3s}
+.duty-card.duty-online{border-color:rgba(60,179,113,.4);box-shadow:0 0 0 1px rgba(60,179,113,.2)}
+.duty-anim{width:100%;height:64px;display:flex;align-items:center;justify-content:center}
+.duty-anim svg{width:100%;height:100%}
+.duty-info{text-align:center;width:100%}
+.duty-type{font-size:9.5px;font-weight:900;letter-spacing:.08em}
+.duty-name{font-size:14px;font-weight:900;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.duty-status{font-size:10px;font-weight:800;margin-top:3px}
+.hs-status{font-size:12px;font-weight:800;margin-top:2px}
+.hs-lbl{font-size:9px;font-weight:900;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+/* 🏆 leaderboard rank medals */
+.rank-medal{font-size:15px;margin-right:4px}
+/* 🔴 full-screen red flash when a critical breakdown arrives */
+body.crit-flash::after{content:'';position:fixed;inset:0;background:rgba(229,72,77,.18);z-index:9999;pointer-events:none;animation:critFlash 1.2s ease-out forwards}
+@keyframes critFlash{0%{opacity:1}100%{opacity:0}}
+/* v1.5 sync-button spin */
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+/* hero danger border pulse */
+.hero-score.hs-danger{animation:hsDanger 1.6s ease-in-out infinite}
+@keyframes hsDanger{0%,100%{box-shadow:0 10px 28px -12px rgba(41,128,185,.2)}50%{box-shadow:0 0 0 4px rgba(229,72,77,.25),0 10px 30px -8px rgba(229,72,77,.45)}}
+
+/* Area group divider: PLP / ASM / F&F */
+.hm-group-header{display:flex;align-items:center;gap:10px;margin:18px 0 12px;padding-bottom:6px;border-bottom:1.5px solid var(--border)}
+.hm-group-header:first-child{margin-top:4px}
+.hm-group-badge{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;
+  background:var(--grad);padding:4px 12px;border-radius:99px;letter-spacing:.06em;
+  box-shadow:0 4px 12px -4px rgba(41,128,185,.5);min-width:48px}
+.hm-group-badge[data-group="1"]{background:linear-gradient(135deg,#60a5fa,#3b82f6)}
+.hm-group-badge[data-group="2"]{background:linear-gradient(135deg,#10b981,#059669)}
+.hm-group-badge[data-group="3"]{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.hm-group-badge[data-group="9"]{background:var(--muted)}
+.hm-group-label{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.03em}
+
+/* Line group */
+.hm-line-group{margin-bottom:16px}
+.hm-line-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.hm-line-name{font-size:11.5px;font-weight:900;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
+.hm-line-stats{font-size:10.5px;font-weight:700;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* Tile grid */
+.hm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:9px}
+
+/* Single machine tile */
+.hm-cell{position:relative;aspect-ratio:1/1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+  transition:transform .2s ease,box-shadow .2s ease;
+  animation:hmPop .4s cubic-bezier(.34,1.56,.64,1) backwards;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.hm-cell:active{transform:scale(.88)}
+.hm-cell:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(0,0,0,.25)}
+
+@keyframes hmPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+
+/* health color classes — background gradients */
+.hm-cell.hm-ok{background:linear-gradient(135deg,#34d399,#10b981);color:#fff}
+.hm-cell.hm-warn{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff}
+.hm-cell.hm-crit{background:linear-gradient(135deg,#f87171,#dc2626);color:#fff}
+/* critical pulse — grab attention immediately */
+.hm-cell.hm-crit{animation:hmPop .4s cubic-bezier(.34,1.56,.64,1) backwards,hmCritPulse 1.8s ease-in-out 1s infinite}
+@keyframes hmCritPulse{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 0 0 5px rgba(220,38,38,0)}}
+/* warning soft pulse */
+.hm-cell.hm-warn{animation:hmPop .4s cubic-bezier(.34,1.56,.64,1) backwards,hmWarnPulse 2.5s ease-in-out 1s infinite}
+@keyframes hmWarnPulse{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}50%{box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 0 0 3px rgba(245,158,11,.18)}}
+
+/* Tile content */
+.hm-cell-name{font-size:10px;font-weight:900;letter-spacing:.03em;text-align:center;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1}
+.hm-cell-pct{font-size:13px;font-weight:900;font-family:'JetBrains Mono',monospace;line-height:1;margin-top:2px}
+.hm-cell-badge{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.9)}
+
+/* ═══ LIVE REFRESH indicator ═══ */
+.refresh-chip{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:var(--muted)}
+.refresh-chip .rdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:liveRipplePlain 2s ease-out infinite}
+@keyframes liveRipplePlain{0%,100%{opacity:1}50%{opacity:.35}}
+/* new item flash — newly synced breakdown cards glow once */
+.new-item-flash{animation:newFlash 2.5s ease-out}
+@keyframes newFlash{0%{box-shadow:0 0 0 3px rgba(61,143,224,.55);background:var(--blue-s)}100%{box-shadow:none}}
+
+/* CHATBOT */
+.chat-fab-wrap{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));width:100%;max-width:480px;transform:translateX(-50%);display:flex;justify-content:flex-end;padding:0 16px;pointer-events:none;z-index:60}
+.chat-fab{pointer-events:auto;width:56px;height:56px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 26px rgba(41,128,185,.5);border:none;cursor:pointer;animation:chatPulse 2.4s infinite}
+.chat-fab:active{transform:scale(.9)}
+@keyframes chatPulse{0%,100%{box-shadow:0 12px 26px rgba(41,128,185,.5)}50%{box-shadow:0 12px 34px rgba(41,128,185,.75),0 0 0 8px rgba(41,128,185,.12)}}
+.chat-screen{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column;max-width:480px;margin:0 auto}
+.chat-screen.open{display:flex}
+.chat-head{display:flex;align-items:center;gap:12px;padding:16px 18px;background:var(--card);border-bottom:1px solid var(--line)}
+.chat-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:82%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.5}
+.msg.bot{background:var(--card);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:5px}
+.msg.user{background:var(--grad);color:#fff;align-self:flex-end;border-bottom-right-radius:5px;font-weight:600}
+.msg.bot b{color:var(--primary-dd)}
+.chat-input-bar{display:flex;gap:10px;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line)}
+.chat-input-bar input{flex:1;padding:14px 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg);font-size:15px;outline:none;color:var(--ink);font-family:inherit}
+.chat-send{width:48px;height:48px;border-radius:14px;background:var(--grad);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.chat-send:active{transform:scale(.9)}
+.chat-quick{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none}
+.chat-quick::-webkit-scrollbar{display:none}
+.chat-quick button{flex-shrink:0;padding:9px 15px;border-radius:99px;background:var(--card);border:1.5px solid var(--line);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink2);font-family:inherit}
+.typing-dots{display:flex;gap:4px;padding:4px 0}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:tdot 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+/* ROW CARDS */
+.row-card{display:flex;gap:14px;padding:16px;background:var(--card);border-radius:var(--R);margin-bottom:12px;border:1px solid var(--line);cursor:pointer;transition:.2s;align-items:center}
+.row-card:active{transform:scale(.98)}
+.health-ring{width:54px;height:54px;flex-shrink:0;position:relative}
+
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:11px 16px;border-radius:13px;background:var(--card);border:1.5px solid var(--line);font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+.chip:active{transform:scale(.95)}
+.chip.sel{background:var(--grad);color:#fff;border-color:transparent}
+
+/* AI CARD */
+.ai-card{background:linear-gradient(135deg,var(--purple-s),var(--blue-s));border:1px solid var(--line);border-radius:var(--R);padding:18px;margin-bottom:14px}
+.ai-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.ai-item:last-child{border-bottom:none}
+.conf{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:12px;padding:3px 9px;border-radius:99px}
+
+/* DRAWER */
+.drawer{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--card);border-radius:30px 30px 0 0;padding:22px;z-index:100;transition:.4s cubic-bezier(.16,1,.3,1);max-height:90vh;overflow-y:auto;box-shadow:0 -12px 40px rgba(0,0,0,.2)}
+.drawer.open{transform:translateX(-50%) translateY(0)}
+.overlay{position:fixed;inset:0;background:rgba(11,34,51,.5);z-index:99;opacity:0;pointer-events:none;transition:.3s;backdrop-filter:blur(3px)}
+.overlay.open{opacity:1;pointer-events:auto}
+.dr-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.dr-row:last-child{border-bottom:none}
+.dr-row .k{color:var(--muted);font-weight:600}.dr-row .vv{font-weight:700;text-align:right}
+
+/* SIGNATURE */
+#sigPad{width:100%;height:140px;border:1.5px dashed var(--line);border-radius:14px;background:var(--card);touch-action:none}
+
+/* TOAST */
+.toast{position:fixed;top:-100px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);font-weight:700;font-size:14px;z-index:200;transition:.35s;max-width:90%}
+.toast.show{top:30px}
+
+.sec{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 12px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--line)}
+
+.bar-wrap{display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:10px}
+.bar{flex:1;background:var(--grad);border-radius:6px 6px 0 0;min-height:4px;transition:height 1s cubic-bezier(.16,1,.3,1);position:relative}
+.bar span{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;color:var(--muted)}
+
+.photo-box{aspect-ratio:1;border:1.5px dashed var(--line);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;background:var(--card);overflow:hidden;position:relative}
+.photo-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* Google-style material search */
+.google-search{position:relative;margin-bottom:20px}
+.google-search .field{height:60px;border-radius:999px;padding-left:56px;font-size:17px;background:var(--card);box-shadow:0 10px 26px -14px rgba(41,128,185,.35)}
+.google-search svg{position:absolute;left:20px;top:50%;transform:translateY(-50%);width:24px;height:24px;color:var(--muted)}
+
+/* calendar + person graph */
+.cal-card{background:var(--card);border-radius:var(--R);padding:16px;border:1px solid var(--line);box-shadow:0 10px 28px -12px rgba(41,128,185,.2)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--primary-dd);font-weight:900}
+.cal-week,.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-week div{text-align:center;font-size:10px;font-weight:800;color:var(--muted)}
+.cday{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;position:relative;cursor:pointer}
+.cday.has::after{content:"";position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:var(--red)}
+.cday.today{background:var(--blue-s);color:var(--blue)}
+.cday.sel{background:var(--grad);color:#fff}.cday.sel::after{background:#fff}
+.person-row{display:grid;grid-template-columns:78px 1fr 42px;gap:10px;align-items:center;margin-bottom:12px}
+.pbar{height:12px;border-radius:999px;background:var(--line);overflow:hidden}.pbar>div{height:100%;border-radius:999px;background:var(--grad);transition:width .8s cubic-bezier(.16,1,.3,1)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <!-- ══ LOGIN ══ -->
+  <div id="screen-login" class="screen active login-screen">
+    <div class="card tc" style="padding:42px 24px">
+      <div style="width:84px;height:84px;background:var(--grad);border-radius:26px;margin:0 auto 22px;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 28px rgba(41,128,185,.4)">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <h1 class="bb" style="font-size:28px">MVRLA-AI</h1>
+      <p class="t-sm" style="color:var(--muted);margin:6px 0 30px">Powered Maintenance Team</p>
+      <input type="text" id="loginName" class="field" placeholder="Full Name (for new employees)" style="margin-bottom:12px"/>
+      <input type="text" id="loginCode" class="field tc" placeholder="Employee Code" style="font-size:20px;letter-spacing:2px;margin-bottom:18px;font-family:'JetBrains Mono',monospace"/>
+      <button class="btn btn-pri wfull" id="loginBtn" onclick="doLogin()">Sign In</button>
+      <p id="loginErr" class="t-xs" style="color:var(--red);margin-top:14px;display:none;font-weight:700"></p>
+      <p class="t-xs" style="color:var(--muted);margin-top:16px">New here? Just enter your code and name — an administrator will approve your access.</p>
+    </div>
+  </div>
+
+  <!-- ══ PENDING APPROVAL ══ -->
+  <div id="screen-pending" class="screen login-screen">
+    <div class="card tc" style="padding:42px 24px">
+      <div style="width:84px;height:84px;background:var(--amber-s);border-radius:26px;margin:0 auto 22px;display:flex;align-items:center;justify-content:center;font-size:38px">🕒</div>
+      <h1 class="bb" style="font-size:22px">Waiting for Approval</h1>
+      <p class="t-sm" style="color:var(--muted);margin:10px 0 20px">Your access request has been sent to the administrator. You'll be able to sign in as soon as it's approved.</p>
+      <div class="card" style="background:var(--blue-s);margin-bottom:20px;text-align:left">
+        <div class="dr-row"><span class="k">Name</span><span class="vv" id="pendingNameVal">—</span></div>
+        <div class="dr-row"><span class="k">Employee Code</span><span class="vv" id="pendingCodeVal">—</span></div>
+      </div>
+      <button class="btn btn-pri wfull" style="margin-bottom:10px" onclick="checkApprovalStatus()">🔄 Check Approval Status</button>
+      <button class="btn btn-ghost wfull" onclick="backToLogin()">← Back</button>
+    </div>
+  </div>
+
+  <!-- ══ SHELL ══ -->
+  <div id="shell" class="hidden">
+
+    <!-- DASHBOARD -->
+    <div id="screen-dash" class="screen">
+      <div class="topbar">
+        <div class="grow">
+          <h1 class="bb" style="font-size:22px" id="dashGreeting">Dashboard</h1>
+          <p class="t-xs" style="color:var(--muted)" id="dashDate"></p>
+          <span class="refresh-chip"><span class="rdot"></span>v1.5 · Live · auto-sync 1 min</span>
+        </div>
+        <button class="icon-btn hidden" onclick="openKnowledgeBase()" id="kbBtn">📄</button>
+        <button class="icon-btn" onclick="forceSyncNow()" id="syncBtn" title="Sync Google Sheet now">🔄</button>
+        <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        <button class="icon-btn" onclick="logout()" id="logoutBtn" title="Logout" style="color:var(--red)">🚪</button>
+      </div>
+
+      <!-- 🎮 ON-DUTY SHIFT SUPERVISORS HUD (replaces PLANT HP) -->
+      <div class="hero-score card" id="heroScore" style="display:block">
+        <div class="duty-head">
+          <span class="hs-shift" id="hsShift">— Shift</span>
+          <span class="hs-clock" id="hsClock">--:--:--</span>
+        </div>
+        <div class="duty-grid">
+          <!-- MECHANICAL supervisor -->
+          <div class="duty-card" id="dutyMech">
+            <div class="duty-anim"><svg id="mechSvg" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <div class="duty-info">
+              <div class="duty-type" style="color:var(--blue)">⚙️ MECHANICAL</div>
+              <div class="duty-name" id="mechSupName">Not set</div>
+              <div class="duty-status" id="mechSupStatus"></div>
+            </div>
+          </div>
+          <!-- ELECTRICAL supervisor -->
+          <div class="duty-card" id="dutyElec">
+            <div class="duty-anim"><svg id="elecSvg" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet"></svg></div>
+            <div class="duty-info">
+              <div class="duty-type" style="color:var(--amber)">⚡ ELECTRICAL</div>
+              <div class="duty-name" id="elecSupName">Not set</div>
+              <div class="duty-status" id="elecSupStatus"></div>
+            </div>
+          </div>
+        </div>
+        <div id="dutyWarn" class="t-xs hidden" style="color:var(--amber);font-weight:800;margin-top:8px;text-align:center">⚠️ Today's duty not set — admin can set it below</div>
+        <!-- ADMIN ONLY: set today's duty -->
+        <div id="dutySetter" class="hidden" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+          <div class="t-xs b" style="color:var(--muted);margin-bottom:8px">👑 SET TODAY'S DUTY (Admin)</div>
+          <div class="flex g2" style="margin-bottom:8px">
+            <select id="dutyShiftSel" class="field" style="flex:1;padding:10px 12px;font-size:13px">
+              <option value="A">🌅 A Shift (First)</option>
+              <option value="B">🌇 B Shift (Second)</option>
+              <option value="C">🌙 C Shift (Night)</option>
+            </select>
+          </div>
+          <div class="flex g2" style="margin-bottom:8px">
+            <select id="dutyMechSel" class="field" style="flex:1;padding:10px 12px;font-size:13px"></select>
+            <select id="dutyElecSel" class="field" style="flex:1;padding:10px 12px;font-size:13px"></select>
+          </div>
+          <button class="btn btn-pri wfull" style="padding:11px;font-size:13px" onclick="saveDuty()">✓ Save Duty</button>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="sec hm-title">🏥 Health Monitor <span id="hmStats" class="refresh-chip" style="margin-left:auto"></span></div>
+      <div class="card heatmap-wrap" id="heatmap"></div>
+
+      <div class="sec">🕘 Recent History</div>
+      <div class="slider" id="historySlider"></div>
+
+      <div class="sec">7-Day Downtime (min)</div>
+      <div class="card"><div class="bar-wrap" id="trendChart"></div></div>
+
+      <div class="sec">Breakdown Calendar</div>
+      <div class="cal-card">
+        <div class="cal-head">
+          <button class="cal-btn" onclick="calMove(-1)">‹</button>
+          <div class="b" id="calTitle"></div>
+          <button class="cal-btn" onclick="calMove(1)">›</button>
+        </div>
+        <div class="cal-week"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+        <div class="cal-days" id="calDays"></div>
+      </div>
+      <div id="calBreakdownDetails" style="margin-top:12px"></div>
+
+      <div class="sec" id="attendedTitle">Breakdown Attended By</div>
+      <div class="card" id="personGraph"></div>
+
+      <div class="sec">Open Breakdowns</div>
+      <div id="openBdList"></div>
+    </div>
+
+    <!-- MACHINES -->
+    <div id="screen-machines" class="screen">
+      <div class="topbar"><h1 class="bb grow" style="font-size:24px">Machines</h1></div>
+      <input type="text" class="field" placeholder="Search machine..." oninput="renderMachines(this.value)" style="margin-bottom:16px"/>
+      <div id="machineList"></div>
+    </div>
+
+    <!-- NEW BREAKDOWN — SIMPLIFIED 9-FIELD FORM -->
+    <div id="screen-new" class="screen">
+      <div class="topbar"><h1 class="bb grow" style="font-size:22px">New Breakdown</h1></div>
+      <div class="card">
+        <div class="flex g2" style="margin-bottom:14px">
+          <div class="grow"><label class="lbl">📅 Date</label><input type="date" id="bdDate" class="field"/></div>
+          <div class="grow"><label class="lbl">🕒 Time</label><input type="time" id="bdTime" class="field"/></div>
+        </div>
+        <label class="lbl">Line</label>
+        <input type="text" id="selLine" class="field" placeholder="e.g. Assembly, BM Stacking" style="margin-bottom:14px"/>
+        <label class="lbl">Machine</label>
+        <input type="text" id="selMachine" class="field" placeholder="e.g. Asm-1, Line-1" style="margin-bottom:14px"/>
+        <label class="lbl">Problem Description</label>
+        <div style="position:relative;margin-bottom:14px">
+          <textarea id="bdProblem" class="field" rows="3" style="resize:none;padding-right:50px" placeholder="Describe the problem..."></textarea>
+          <button class="icon-btn" onclick="voiceInput('bdProblem')" style="position:absolute;right:8px;bottom:8px;width:38px;height:38px">🎤</button>
+        </div>
+        <label class="lbl">Technician Name</label>
+        <input type="text" id="selTech" class="field" placeholder="e.g. Somusekhar" style="margin-bottom:14px"/>
+        <label class="lbl">Corrective Action Taken</label>
+        <textarea id="manCorr" class="field" rows="2" placeholder="What was done to fix it?" style="margin-bottom:14px;resize:none"></textarea>
+        <label class="lbl">Repair Time (min)</label>
+        <input type="number" id="manRepairMin" class="field" placeholder="e.g. 45" min="0" style="margin-bottom:14px"/>
+        <label class="lbl">Status</label>
+        <select id="manStatus" class="field" style="margin-bottom:16px">
+          <option value="Open">Open</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <button class="btn btn-pri wfull" onclick="submitSimple()" style="font-size:16px;padding:16px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Breakdown
+        </button>
+        <button class="btn btn-ghost wfull" style="margin-top:10px;font-size:13px;padding:12px" onclick="runAI()">🤖 Get AI Help (optional)</button>
+        <div id="aiResults" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- REMOVED: hidden compatibility fields (older submit code reads these) -->
+    <div class="hidden">
+      <input type="text" id="selSection"/><input type="text" id="selPart"/>
+      <input type="text" id="manRoot" value="—"/><input type="text" id="manPrev" value=""/>
+      <input type="text" id="manSpare" value=""/><input type="number" id="manQty" value="0"/>
+      <input type="number" id="manDowntimeMin" value="0"/>
+    </div>
+
+    <!-- MATERIAL SEARCH — Google style: empty until you type -->
+    <div id="screen-materials" class="screen">
+      <div class="topbar">
+        <button class="icon-btn" onclick="nav('dash')">←</button>
+        <div class="grow"><h1 class="bb" style="font-size:24px">Material Search</h1><p class="t-sm" style="color:var(--muted)">Search parts, quantities & locations</p></div>
+      </div>
+      <div class="google-search">
+        <input type="text" class="field" id="matSearchInput" placeholder="Search: cam 262-030, bearing, chain..." oninput="renderMats(this.value)"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <p class="t-xs b" id="matCount" style="color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px"></p>
+      <div id="matList">
+        <div class="tc" style="padding:50px 20px;color:var(--muted)">
+          <div style="font-size:42px;margin-bottom:12px">🔍</div>
+          <div class="b" style="font-size:16px">Search Materials</div>
+          <div class="t-sm" style="margin-top:6px">Type a part number like <b>262-030</b><br>or a name like <b>cam</b>, <b>bearing</b>, <b>chain</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="screen-history" class="screen">
+      <div class="topbar"><h1 class="bb grow" style="font-size:24px">History</h1></div>
+      <input type="text" class="field" placeholder="Search problem, machine, technician, root cause..." oninput="renderHistory(this.value)" style="margin-bottom:16px"/>
+      <div id="historyList"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="screen-reports" class="screen">
+      <div class="topbar"><h1 class="bb grow" style="font-size:24px">Reports</h1></div>
+      <div class="sec">Period</div>
+      <div class="chip-grid" style="margin-bottom:18px">
+        <div class="chip sel" onclick="selectReport(this,'Daily')">Daily</div>
+        <div class="chip" onclick="selectReport(this,'Weekly')">Weekly</div>
+        <div class="chip" onclick="selectReport(this,'Monthly')">Monthly</div>
+        <div class="chip" onclick="selectReport(this,'Yearly')">Yearly</div>
+      </div>
+      <div id="reportSummary" class="card" style="margin-bottom:16px"></div>
+      <button class="btn btn-pri wfull" style="margin-bottom:10px" onclick="exportData('pdf')">📄 Export PDF</button>
+      <button class="btn btn-ghost wfull" onclick="exportData('excel')">📊 Export Excel (CSV)</button>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="screen-admin" class="screen">
+      <div class="topbar"><h1 class="bb grow" style="font-size:24px">Admin Panel</h1></div>
+
+      <div class="sec">🕒 Pending Approvals</div>
+      <div id="pendingList" style="margin-bottom:20px"></div>
+
+      <div class="sec">🔐 Active Device Sessions</div>
+      <div id="sessionList" style="margin-bottom:20px"></div>
+
+      <div class="sec">👑 User Access Rights (Make Admin)</div>
+      <div id="approvedList" style="margin-bottom:20px"></div>
+
+      <div class="sec">📄 Knowledge Base — Manuals</div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="t-sm" style="color:var(--muted);margin-bottom:14px">Upload maintenance manuals (PDF only, one or many at once). The AI chatbot searches these automatically and answers users using only manual content.</div>
+        <label class="btn btn-ghost wfull" style="margin-bottom:8px;cursor:pointer">
+          <input type="file" accept="application/pdf" class="hidden" id="pdfInput" onchange="handlePdfUpload(this)" multiple/>
+          📎 Upload PDF Manual(s)
+        </label>
+        <button class="btn btn-ghost wfull" style="margin-bottom:8px" onclick="rebuildAllIndexes(true)">🔄 Re-index Knowledge Base</button>
+        <div class="pdf-status-target t-xs" style="color:var(--muted);margin-bottom:14px"></div>
+        <div class="manual-list-target"></div>
+      </div>
+
+      <div class="sec">📘 Knowledge Base — Add New Entry</div>
+      <div class="card" style="margin-bottom:20px; border-top: 4px solid var(--primary-dd);">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div><label class="lbl">Machine</label><input type="text" id="kbMachine" class="field" placeholder="e.g. BM Stacking"/></div>
+          <div><label class="lbl">Category</label><input type="text" id="kbCategory" class="field" placeholder="e.g. Mechanical"/></div>
+        </div>
+        
+        <label class="lbl">Describe the Problem</label>
+        <input type="text" id="kbProblem" class="field" placeholder="What is the error or symptom?" style="margin-bottom:12px"/>
+        
+        <label class="lbl">Possible Cause</label>
+        <input type="text" id="kbCause" class="field" placeholder="Why does this happen?" style="margin-bottom:12px"/>
+        
+        <label class="lbl">Step-by-Step Solution</label>
+        <textarea id="kbSteps" class="field" rows="4" placeholder="Type each step on a new line..." style="margin-bottom:12px; resize: none;"></textarea>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div><label class="lbl">Required Tools</label><input type="text" id="kbTools" class="field" placeholder="Tools needed"/></div>
+          <div><label class="lbl">Spare Parts</label><input type="text" id="kbSpares" class="field" placeholder="Part numbers"/></div>
+        </div>
+
+        <label class="lbl">Safety Precautions</label>
+        <input type="text" id="kbSafety" class="field" placeholder="e.g. LOTO required" style="margin-bottom:16px"/>
+        
+        <button class="btn btn-pri wfull shadow-lg" onclick="submitKbEntry()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Save to Knowledge Base
+        </button>
+      </div>
+      <div class="kb-entry-list-target" style="margin-bottom:20px"></div>
+
+      <div class="sec">👤 Technicians</div>
+      <div id="adminTechList" style="margin-bottom:20px"></div>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav" id="mainNav">
+      <button class="nav-btn active" onclick="nav('dash')" id="nav-dash">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Home</span>
+      </button>
+      <button class="nav-btn" onclick="nav('materials')" id="nav-materials">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search</span>
+      </button>
+      <button class="fab" onclick="startNew()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="nav-btn" onclick="nav('history')" id="nav-history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg><span>History</span>
+      </button>
+      <button class="nav-btn" onclick="nav('reports')" id="nav-reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Reports</span>
+      </button>
+      <button class="nav-btn hidden" onclick="nav('admin')" id="nav-admin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Admin</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div style="width:46px;height:5px;background:var(--line);border-radius:3px;margin:0 auto 20px"></div>
+  <div id="drawerContent"></div>
+</div>
+
+<!-- AI CHATBOT — visible only on Dashboard -->
+<div class="chat-fab-wrap hidden" id="chatFabWrap">
+  <button class="chat-fab" onclick="openChat()" title="Ask AI">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+  </button>
+</div>
+
+<div class="chat-screen" id="chatScreen">
+  <div class="chat-head">
+    <button class="icon-btn" onclick="closeChat()">←</button>
+    <div style="width:40px;height:40px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🤖</div>
+    <div class="grow">
+      <div class="b" style="font-size:15px">MVRLA AI Assistant</div>
+      <div class="t-xs" style="color:var(--green)">● Online · Ready to help</div>
+    </div>
+  </div>
+  <div class="chat-quick" id="chatQuick"></div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-input-bar">
+    <input type="text" id="chatInput" placeholder="Describe your machine problem..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="chat-send" onclick="sendChat()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ═══════════ CONFIG — paste your Apps Script Web App URL ═══════════ */
+const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYtlunACOC97iz5gab3ZxfaZP3abG4UjLMjGCaqw5rJQk5PC8bHHRP9qCbszFTF_Jd/exec';
+
+/* ═══════════ GLOBAL STATE — declared FIRST so every function below can
+   safely reference them (fixes "Cannot access before initialization"). ═══ */
+let currentUser=null, sigCtx=null, drawing=false;
+let wizard={problem:'',ai:null};
+let LANG='en';
+const MASTER_ADMIN_CODE='1001234';
+
+/* ═══════════ MASTER DATA ═══════════ */
+/* AREAS_DATA — flat master list: one entry per machine {area, line, machine}.
+   The REAL list lives in the Google Sheet "Machines" tab (Area|Line|Machine).
+   Synced automatically — edit sheet rows anytime, NO code changes needed.
+   Each user sees ONLY their assigned Area (Employees sheet "area" column);
+   Admin sees all Areas. Demo seed below mirrors the real plant layout. */
+let AREAS_DATA = (function(){
+  const rows=[]; let i;
+  for(i=1;i<=13;i++) rows.push({area:'Group Casting',line:'P01',machine:'M'+i});
+  for(i=1;i<=13;i++) rows.push({area:'Group Casting',line:'N01',machine:'M'+i});
+  for(i=1;i<=4;i++)  rows.push({area:'Oxide Plant',line:'Line 1',machine:'M'+i});
+  for(i=1;i<=3;i++)  rows.push({area:'Pasting',line:'Line 1',machine:'M'+i});
+  for(i=1;i<=20;i++) rows.push({area:'Oven',line:'Line 1',machine:'M'+i});
+  ['BM Stacking','COS','ICW','Heat Sealing','Post Burning','Laser Marking','Leak Testing']
+    .forEach(n=>rows.push({area:'Assembly',line:'Line 1',machine:n}));
+  for(let ln=2;ln<=7;ln++) for(i=1;i<=7;i++) rows.push({area:'Assembly',line:'Line '+ln,machine:'M'+i});
+  return rows;
+})();
+
+/* LINES + MACHINES — DERIVED views, rebuilt by applyAreaFilter() from
+   AREAS_DATA based on the logged-in user's Area. All existing dashboard
+   code (calcKPIs, machineStats, ...) keeps working unchanged. */
+let LINES = [];
+let MACHINES = {};
+function applyAreaFilter(){
+  const isAdmin=!!(currentUser&&currentUser.admin);
+  const userArea=(currentUser&&currentUser.area)?String(currentUser.area).trim():'';
+  let visible=(isAdmin||!userArea)?AREAS_DATA.slice():AREAS_DATA.filter(r=>r.area===userArea);
+  // Safety: if the user's area matches nothing (e.g. sheet uses the old
+  // Line|Machine format without an Area column, or a typo in the Employees
+  // sheet), fall back to showing everything instead of an empty dashboard.
+  if(!visible.length && AREAS_DATA.length){
+    console.warn('Area "'+userArea+'" matched no machines — showing all areas as fallback.');
+    visible=AREAS_DATA.slice();
+  }
+  const areasVisible=[...new Set(visible.map(r=>r.area))];
+  const prefix=areasVisible.length>1;   // multiple areas → prefix line names to avoid clashes ("Assembly · Line 1")
+  MACHINES={};
+  visible.forEach(r=>{
+    const key=prefix?(r.area+' · '+r.line):r.line;
+    if(!MACHINES[key]) MACHINES[key]=[];
+    if(!MACHINES[key].includes(r.machine)) MACHINES[key].push(r.machine);
+  });
+  LINES=Object.keys(MACHINES);
+}
+applyAreaFilter();   // initial build (no user yet = all areas, harmless pre-login)
+const SECTIONS = ['Feeder','Drive','Roller','Conveyor','Hydraulic','Control Panel'];
+const PARTS = ['Chain','Sprocket','Bearing','Belt','Motor','Sensor','Cylinder','Coupling'];
+let TECHNICIANS = [
+  {name:'Ravi Kumar',code:'EMP-2001',dept:'Mechanical',desig:'Sr. Technician'},
+  {name:'Suresh Babu',code:'EMP-2002',dept:'Electrical',desig:'Technician'},
+  {name:'Anil Reddy',code:'EMP-2003',dept:'Mechanical',desig:'Fitter'},
+];
+
+/* MATERIALS — Part_Number, Item_Description, Machine, Location, Stock_Qty, Price, Category
+   NOTE: must be `let` (not const) because loadFromSheet() replaces this
+   list with live rows from the Google Sheet "Materials" tab. */
+let MATS = [
+  {p:'262-030-00010',n:'Cam Follower Bearing KR22',m:'BM Stacking',l:'Bay 1',q:14,pr:450,c:'Bearing',img:''},
+  {p:'262-030-00015',n:'Pneumatic Cylinder 40x100mm',m:'BM Stacking',l:'Bay 1',q:6,pr:2850,c:'Pneumatic',img:''},
+  {p:'262-030-00022',n:'Proximity Sensor PNP 5mm',m:'BM Stacking',l:'Bay 1',q:18,pr:340,c:'Sensor',img:''},
+  {p:'262-030-00045',n:'Timing Belt 5M-600',m:'BM Stacking',l:'Bay 1',q:4,pr:1280,c:'Belt',img:''},
+  {p:'262-030-00060',n:'Chain 10B Roller Chain',m:'BM Stacking',l:'Bay 1',q:9,pr:980,c:'Mechanical',img:''},
+  {p:'262-030-00061',n:'Sprocket 18T',m:'BM Stacking',l:'Bay 1',q:7,pr:760,c:'Mechanical',img:''},
+  {p:'252-020-00030',n:'Paste Roller Bearing 6206-2RS',m:'Pasting',l:'Bay 2',q:24,pr:220,c:'Bearing',img:''},
+  {p:'252-030-00005',n:'Curing Oven Heater 2kW',m:'Formation',l:'Zone 2',q:4,pr:1560,c:'Electrical',img:''},
+  {p:'252-050-00010',n:'Contactor 25A 3-Pole',m:'Charging',l:'Bay 4',q:15,pr:1850,c:'Electrical',img:''},
+  {p:'252-070-00020',n:'EP2 Grease Cartridge 400g',m:'Maintenance',l:'Store',q:20,pr:180,c:'Lubricant',img:''},
+  {p:'252-160-00005',n:'Lubricating Oil ISO 46 20L',m:'Lubrication',l:'Store',q:10,pr:2800,c:'Lubricant',img:''},
+];
+
+/* AI Knowledge Base — keyword → suggestions */
+const AI_KB = [
+  {kw:['chain','slip','feed'],root:[['Loose Chain',96],['Worn Sprocket',90],['Bearing Damage',84]],
+   corr:['Adjust Chain Tension','Replace Worn Sprocket','Lubricate Chain','Check Shaft Alignment'],
+   prev:['Weekly Chain Inspection','Monthly Lubrication','Sprocket Wear Inspection'],
+   safety:['Lock-Out Tag-Out (LOTO)','Wear Cut-Resistant Gloves','Ensure Machine Stopped'],
+   tools:['Chain Tensioner','Torque Wrench','Grease Gun'],spares:['Chain 10B','Sprocket 18T'],time:45},
+  {kw:['bearing','noise','heat','vibration'],root:[['Lubrication Loss',94],['Bearing Wear',88],['Misalignment',80]],
+   corr:['Replace Bearing 6206-2RS','Re-grease with EP2','Laser Align Shaft','Check Mounting'],
+   prev:['Vibration Monitoring','Re-grease every 2000h','Quarterly Alignment Check'],
+   safety:['LOTO','Allow Bearing to Cool','Use IR Thermometer'],
+   tools:['Bearing Puller','IR Gun','Vibration Pen'],spares:['Bearing 6206-2RS','EP2 Grease'],time:60},
+  {kw:['motor','overheat','trip','electrical'],root:[['Overload',92],['Winding Fault',85],['Cooling Fan Block',78]],
+   corr:['Check Phase Current','Megger Test Insulation','Clean Cooling Fan','Verify Load'],
+   prev:['Monthly Current Check','Annual Megger Test','Clean Vents Weekly'],
+   safety:['LOTO & Verify Zero Voltage','Use Insulated Tools','Approved Voltage Tester'],
+   tools:['Clamp Meter','Megger','IR Gun'],spares:['Contactor 25A','Overload Relay'],time:75},
+  {kw:['belt','tension','crack'],root:[['Loose Belt',93],['Belt Wear',87],['Pulley Misalign',79]],
+   corr:['Adjust Take-up','Replace V-Belt','Align Pulleys','Clean Pulley Grooves'],
+   prev:['Weekly Belt Inspection','Tension Check Monthly','Pulley Alignment Quarterly'],
+   safety:['LOTO','Guard Reinstall','No Loose Clothing'],
+   tools:['Tension Gauge','Straight Edge'],spares:['V-Belt B54','Timing Belt'],time:40},
+  {kw:['hydraulic','leak','pressure','oil'],root:[['Seal Failure',91],['Hose Damage',86],['Low Oil',82]],
+   corr:['Relieve Pressure','Replace Seal Kit','Replace Hose','Top-up ISO VG46'],
+   prev:['Oil Change 2000h','Seal Inspection','Filter Change 500h'],
+   safety:['Relieve Pressure to Zero','Wear Goggles','Clean Spills'],
+   tools:['Seal Kit','Torque Wrench'],spares:['Seal Kit','Hydraulic Hose'],time:55},
+  {kw:['sensor','signal','detect'],root:[['Sensor Misalign',90],['Cable Fault',84],['Sensor Failure',80]],
+   corr:['Realign Sensor','Check Wiring','Replace Sensor','Clean Lens'],
+   prev:['Monthly Sensor Check','Cable Inspection','Keep Lens Clean'],
+   safety:['LOTO','ESD Precaution'],tools:['Multimeter','Allen Key'],spares:['Proximity Sensor PNP'],time:30},
+];
+
+/* ═══════════ STATE — moved to top of script (see GLOBAL STATE) ═══════════ */
+
+/* ═══════════ DEMO BREAKDOWN DATA ═══════════ */
+let BREAKDOWNS = seedData();
+function seedData(){
+  const today=new Date().toISOString().split('T')[0];
+  const d=(n)=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
+  return [
+    {id:'BD-1042',date:today,time:'09:15',line:'BM Stacking',machine:'Line-1',section:'Feeder',part:'Chain',problem:'Chain slipping while feeding separator',root:'Loose Chain',corr:'Adjust Chain Tension',prev:'Weekly Chain Inspection',tech:'Ravi Kumar',code:'EMP-2001',spare:'Chain 10B',qty:1,repairMin:45,downtimeMin:120,status:'Open'},
+    {id:'BD-1041',date:today,time:'07:40',line:'Pasting',machine:'Paste-1',section:'Roller',part:'Bearing',problem:'Roller bearing noise and heat',root:'Lubrication Loss',corr:'Re-grease with EP2',prev:'Vibration Monitoring',tech:'Suresh Babu',code:'EMP-2002',spare:'Bearing 6206-2RS',qty:2,repairMin:60,downtimeMin:90,status:'Closed'},
+    {id:'BD-1040',date:d(1),time:'14:20',line:'Formation',machine:'Oven-3',section:'Control Panel',part:'Motor',problem:'Motor tripping on overload',root:'Overload',corr:'Check Phase Current',prev:'Monthly Current Check',tech:'Ravi Kumar',code:'EMP-2001',spare:'Contactor 25A',qty:1,repairMin:75,downtimeMin:150,status:'Closed'},
+    {id:'BD-1039',date:d(2),time:'11:05',line:'BM Stacking',machine:'Line-1',section:'Drive',part:'Belt',problem:'Drive belt slipping',root:'Loose Belt',corr:'Adjust Take-up',prev:'Weekly Belt Inspection',tech:'Anil Reddy',code:'EMP-2003',spare:'V-Belt B54',qty:1,repairMin:40,downtimeMin:60,status:'Closed'},
+    {id:'BD-1038',date:d(3),time:'16:30',line:'Assembly',machine:'Asm-1',section:'Hydraulic',part:'Cylinder',problem:'Hydraulic leak at cylinder',root:'Seal Failure',corr:'Replace Seal Kit',prev:'Oil Change 2000h',tech:'Suresh Babu',code:'EMP-2002',spare:'Seal Kit',qty:1,repairMin:55,downtimeMin:100,status:'Closed'},
+    {id:'BD-1037',date:d(4),time:'08:50',line:'BM Stacking',machine:'Line-1',section:'Feeder',part:'Chain',problem:'Chain slipping again on feeder',root:'Worn Sprocket',corr:'Replace Worn Sprocket',prev:'Sprocket Wear Inspection',tech:'Ravi Kumar',code:'EMP-2001',spare:'Sprocket 18T',qty:1,repairMin:50,downtimeMin:80,status:'Closed'},
+  ];
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCESS CONTROL — new employee sign-up requires admin approval, and
+   each approved code is locked to a single device. Works fully offline
+   (localStorage simulation) and syncs with Google Sheets automatically
+   whenever APP_SCRIPT_URL is configured (see Code.gs: requestAccess,
+   approveUser, rejectUser, releaseDevice).
+   NOTE: MASTER_ADMIN_CODE is declared at the top of the script.
+═══════════════════════════════════════════════════════════════════ */
+
+// Persistent per-browser device fingerprint — this is what enforces
+// "one user, one device" together with the backend/local session store.
+function getDeviceId(){
+  let id=localStorage.getItem('mv_device_id');
+  if(!id){ id='DEV-'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('mv_device_id',id); }
+  return id;
+}
+
+// LOCAL_ACCESS = { code: {name, status:'Pending'|'Approved'|'Rejected', deviceId, admin} }
+let LOCAL_ACCESS=JSON.parse(localStorage.getItem('mv_access')||'{}');
+function saveLocalAccess(){localStorage.setItem('mv_access',JSON.stringify(LOCAL_ACCESS));}
+(function seedLocalAccess(){
+  const seed={
+    '1001234':{name:'System Admin',status:'Approved',deviceId:'',admin:true,area:''},        // admin = all areas
+    '2001001':{name:'Ravi Kumar',status:'Approved',deviceId:'',admin:false,area:'Assembly'},
+    '2001002':{name:'Suresh Babu',status:'Approved',deviceId:'',admin:false,area:'Pasting'},
+    '2001003':{name:'Anil Reddy',status:'Approved',deviceId:'',admin:false,area:'Group Casting'},
+  };
+  let changed=false;
+  Object.keys(seed).forEach(code=>{
+    if(!LOCAL_ACCESS[code]){ LOCAL_ACCESS[code]=seed[code]; changed=true; }
+    else if(LOCAL_ACCESS[code].area===undefined){
+      // upgrade old saved entries (pre-area version) with their seed area
+      LOCAL_ACCESS[code].area=seed[code].area; changed=true;
+    }
+  });
+  if(changed) saveLocalAccess();
+})();
+
+function localRequestAccess(code,name){
+  const devId=getDeviceId();
+  if(code===MASTER_ADMIN_CODE){
+    LOCAL_ACCESS[code]=LOCAL_ACCESS[code]||{name:'System Admin',admin:true,status:'Approved',deviceId:''};
+    LOCAL_ACCESS[code].status='Approved'; LOCAL_ACCESS[code].admin=true; LOCAL_ACCESS[code].deviceId=devId;
+    saveLocalAccess();
+    return {ok:true,status:'Approved',user:{name:LOCAL_ACCESS[code].name||'System Admin',admin:true}};
+  }
+  const entry=LOCAL_ACCESS[code];
+  if(!entry){
+    LOCAL_ACCESS[code]={name:name||('Employee '+code),status:'Pending',deviceId:'',admin:false};
+    saveLocalAccess();
+    return {ok:true,status:'Pending'};
+  }
+  if(entry.status==='Pending') return {ok:true,status:'Pending'};
+  if(entry.status==='Rejected') return {ok:true,status:'Rejected'};
+  // Approved → single-device enforcement
+  if(!entry.deviceId || entry.deviceId===devId){
+    entry.deviceId=devId; saveLocalAccess();
+    return {ok:true,status:'Approved',user:{name:entry.name,admin:!!entry.admin,area:entry.area||''}};
+  }
+  return {ok:true,status:'DeviceConflict'};
+}
+
+async function requestAccess(code,name){
+  if(APP_SCRIPT_URL && !APP_SCRIPT_URL.includes('PASTE_YOUR')){
+    try{
+      const r=await fetch(APP_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'requestAccess',code,name,deviceId:getDeviceId()})});
+      const d=await r.json();
+      if(d && d.ok){
+        LOCAL_ACCESS[code]=LOCAL_ACCESS[code]||{};
+        LOCAL_ACCESS[code].name=(d.user&&d.user.name)||name||LOCAL_ACCESS[code].name;
+        LOCAL_ACCESS[code].status=d.status;
+        LOCAL_ACCESS[code].admin=!!(d.user&&d.user.admin);
+        if(d.status==='Approved') LOCAL_ACCESS[code].deviceId=getDeviceId();
+        saveLocalAccess();
+        return d;
+      }
+    }catch(e){ console.warn('requestAccess backend failed, using local fallback',e); }
+  }
+  return localRequestAccess(code,name);
+}
+
+async function doLogin(){
+  const codeEl=document.getElementById('loginCode');
+  const nameEl=document.getElementById('loginName');
+  const code=codeEl.value.trim();
+  const name=nameEl?nameEl.value.trim():'';
+  const err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!code){ err.textContent='Please enter your employee code'; err.style.display='block'; return; }
+  const btn=document.getElementById('loginBtn');
+  const original=btn.innerHTML;
+  btn.innerHTML='<div class="typing-dots" style="justify-content:center"><span></span><span></span><span></span></div>';
+  btn.disabled=true;
+  const res=await requestAccess(code,name);
+  btn.innerHTML=original; btn.disabled=false;
+  const status=res&&res.status;
+  if(status==='Approved'){
+    currentUser=res.user||{name:name||'Employee',admin:false};
+    currentUser.code=code;
+    if(!currentUser.area && LOCAL_ACCESS[code]) currentUser.area=LOCAL_ACCESS[code].area||'';
+    enterApp();
+  }else if(status==='Pending'){
+    showPendingScreen(code,name);
+  }else if(status==='Rejected'){
+    err.textContent='Your access request was rejected by the administrator.';
+    err.style.display='block';
+  }else if(status==='DeviceConflict'){
+    err.textContent='This employee code is already logged in on another device.';
+    err.style.display='block';
+  }else{
+    err.textContent='Unable to verify code. Please try again.';
+    err.style.display='block';
+  }
+}
+document.getElementById('loginCode').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+function showPendingScreen(code,name){
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-pending').classList.add('active');
+  document.getElementById('pendingCodeVal').innerText=code;
+  document.getElementById('pendingNameVal').innerText=name||(LOCAL_ACCESS[code]&&LOCAL_ACCESS[code].name)||'—';
+}
+async function checkApprovalStatus(){
+  const code=document.getElementById('pendingCodeVal').innerText;
+  const res=await requestAccess(code,'');
+  if(res.status==='Approved'){
+    currentUser=res.user||{name:'Employee',admin:false}; currentUser.code=code;
+    document.getElementById('screen-pending').classList.remove('active');
+    enterApp();
+  }else if(res.status==='Rejected'){
+    showToast('❌ Your request was rejected by the administrator');
+  }else{
+    showToast('⏳ Still waiting for admin approval');
+  }
+}
+function backToLogin(){
+  document.getElementById('screen-pending').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('loginCode').value='';
+  if(document.getElementById('loginName')) document.getElementById('loginName').value='';
+}
+
+function enterApp(){
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-pending').classList.remove('active');
+  document.getElementById('shell').classList.remove('hidden');
+  // Personalized greeting on the dashboard
+  const uname=(currentUser&&currentUser.name)?currentUser.name.split(' ')[0]:'User';
+  const hour=new Date().getHours();
+  const timeGreet=hour<12?'Good Morning':hour<17?'Good Afternoon':'Good Evening';
+  const gEl=document.getElementById('dashGreeting');
+  if(gEl) gEl.innerHTML=`${timeGreet}, <span style="color:var(--primary-dd)">${uname}</span> 👋`;
+  // Refresh area + device lock from the access store — fixes old saved
+  // sessions (pre-area version) and keeps Active Device Sessions accurate
+  // even after auto-login.
+  if(currentUser.code && LOCAL_ACCESS[currentUser.code]){
+    const acc=LOCAL_ACCESS[currentUser.code];
+    if(currentUser.area===undefined || currentUser.area===null || currentUser.area==='') currentUser.area=acc.area||'';
+    if(currentUser.admin===undefined) currentUser.admin=!!acc.admin;
+    acc.deviceId=getDeviceId();          // re-register this device's session
+    saveLocalAccess();
+  }
+  // Area lock: rebuild machine list for this user's assigned area
+  applyAreaFilter();
+  const areaLabel=currentUser.admin?'All Areas':(currentUser.area||'No area assigned — contact admin');
+  document.getElementById('dashDate').innerText=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · 📍 '+areaLabel;
+  // Persist session — enables one-time login (auto-login next time)
+  try{ localStorage.setItem('mv_current_user',JSON.stringify(currentUser)); }catch(e){}
+  // Admin-only UI
+  if(currentUser.admin){
+    document.getElementById('kbBtn').classList.remove('hidden');
+    document.getElementById('nav-admin').classList.remove('hidden');
+  }
+  loadFromSheet();
+  ensureManualsIndexed();
+  nav('dash');
+  if(!APP_SCRIPT_URL || APP_SCRIPT_URL.includes('PASTE_YOUR')){
+    setTimeout(()=>showToast('ℹ️ Demo mode — configure APP_SCRIPT_URL for live Google Sheets sync'),800);
+  }
+}
+
+// Auto-login on page load — if a valid session exists, skip the login screen
+(function autoLogin(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('mv_current_user')||'null');
+    if(saved && saved.code){
+      // Wait a tick so all functions/DOM are ready
+      window.addEventListener('DOMContentLoaded',()=>{
+        currentUser=saved;
+        enterApp();
+      });
+    }
+  }catch(e){ console.warn('Auto-login skipped:',e); }
+})();
+
+// Logout releases this device's lock so the same code can sign in
+// elsewhere afterwards, then reloads back to the login screen.
+async function logout(){
+  const code=currentUser&&currentUser.code;
+  if(code){
+    if(LOCAL_ACCESS[code]){ LOCAL_ACCESS[code].deviceId=''; saveLocalAccess(); }
+    if(APP_SCRIPT_URL && !APP_SCRIPT_URL.includes('PASTE_YOUR')){
+      try{ await fetch(APP_SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'releaseDevice',code})}); }catch(e){}
+    }
+  }
+  // Clear persistent session so next launch shows the login screen
+  try{ localStorage.removeItem('mv_current_user'); }catch(e){}
+  location.reload();
+}
+
+/* ═══════════ NAV ═══════════ */
+function nav(s){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('screen-'+s).classList.add('active');
+  const b=document.getElementById('nav-'+s); if(b)b.classList.add('active');
+  if(s==='dash')renderDash();
+  if(s==='machines')renderMachines('');
+  if(s==='materials'){document.getElementById('matSearchInput').value='';renderMats('');}
+  if(s==='history')renderHistory('');
+  if(s==='reports')renderReport();
+  if(s==='admin')renderAdminPanel();
+  // AI Chat button only appears on the Dashboard
+  const chatWrap=document.getElementById('chatFabWrap');
+  if(chatWrap) chatWrap.classList.toggle('hidden', s!=='dash');
+  if(s!=='dash') closeChat();
+}
+
+/* ═══════════ KPI CALCULATIONS ═══════════ */
+function calcKPIs(){
+  const today=new Date().toISOString().split('T')[0];
+  const todayBd=BREAKDOWNS.filter(b=>b.date===today);
+  const allMachines=Object.values(MACHINES).flat();
+  const open=BREAKDOWNS.filter(b=>b.status==='Open');
+  const closed=BREAKDOWNS.filter(b=>b.status==='Closed');
+  const totalDt=todayBd.reduce((a,b)=>a+b.downtimeMin,0);
+  const totalRepair=BREAKDOWNS.reduce((a,b)=>a+b.repairMin,0);
+  const mttr=BREAKDOWNS.length?Math.round(totalRepair/BREAKDOWNS.length):0;
+  const totalDtAll=BREAKDOWNS.reduce((a,b)=>a+b.downtimeMin,0);
+  const opTime=allMachines.length*8*60*7;
+  const mtbf=BREAKDOWNS.length?Math.round((opTime-totalDtAll)/BREAKDOWNS.length):0;
+  const avail=Math.round(((opTime-totalDtAll)/opTime)*100);
+  const combo={}; BREAKDOWNS.forEach(b=>{const k=b.machine+'|'+b.part;combo[k]=(combo[k]||0)+1;});
+  const repeat=Object.values(combo).filter(v=>v>1).length;
+  const breakdownMachines=[...new Set(open.map(b=>b.machine))].length;
+  const running=allMachines.length-breakdownMachines;
+  const health=Math.round((running/allMachines.length)*100);
+  const oee=Math.round(avail*0.95*0.98);
+  const critical=Object.entries(combo).filter(([k,v])=>v>=2).map(([k])=>k.split('|')[0]);
+  return{total:allMachines.length,running,breakdown:breakdownMachines,todayBd:todayBd.length,totalDt,
+    health,mttr,mtbf,oee,open:open.length,closed:closed.length,critical:[...new Set(critical)].length,repeat};
+}
+
+/* ═══════════ DASHBOARD ═══════════ */
+/* ═══ GAME HUD: Plant HP score + 📺 TV clock/shift (runs with renderDash) ═══ */
+/* Detect the DOMINANT breakdown category to decide which equipment to animate.
+   Mechanical → gears+piston+belt  |  Electrical → arc+circuit+coil
+   Mixed or healthy → both shown at half-speed */
+function dominantCategory(){
+  const open=BREAKDOWNS.filter(b=>b.status==='Open');
+  if(!open.length) return 'healthy';
+  const cats={Mechanical:0,Electrical:0,Pneumatic:0,Hydraulic:0,Sensor:0};
+  open.forEach(b=>{const c=String(b.cat||b.category||'');if(cats[c]!==undefined)cats[c]++;else cats.Mechanical++;});
+  const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0][0];
+  return ['Electrical','Sensor'].includes(top)?'electrical':'mechanical';
+}
+
+function buildMechanicalSvg(speed,color,danger){
+  const c=danger?'#FF5555':color;
+  const s=speed.toFixed(2);
+  return `
+<style>
+  .gear-main{transform-origin:48px 56px;animation:gearSpin ${s}s linear infinite}
+  .gear-small{transform-origin:86px 40px;animation:gearSpin ${s}s linear infinite reverse}
+  .gear-tiny{transform-origin:24px 84px;animation:gearSpin ${(speed*1.4).toFixed(2)}s linear infinite}
+  .piston-arm{animation:pistonMove ${(speed*.7).toFixed(2)}s ease-in-out infinite}
+  .belt-seg{animation:beltMove ${(speed*1.2).toFixed(2)}s linear infinite}
+  @keyframes gearSpin{to{transform:rotate(360deg)}}
+  @keyframes pistonMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+  @keyframes beltMove{from{transform:translateX(0)}to{transform:translateX(-28px)}}
+</style>
+<!-- Main Gear -->
+<g class="gear-main">
+  <circle cx="48" cy="56" r="22" fill="none" stroke="${c}" stroke-width="3"/>
+  <circle cx="48" cy="56" r="10" fill="${c}" opacity=".2"/>
+  ${[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>`<rect x="46" y="30" width="4" height="9" rx="2" fill="${c}" transform="rotate(${a} 48 56)"/>`).join('')}
+  <circle cx="48" cy="56" r="4" fill="${c}"/>
+</g>
+<!-- Small counter-gear -->
+<g class="gear-small">
+  <circle cx="86" cy="40" r="14" fill="none" stroke="${c}" stroke-width="2.5" opacity=".8"/>
+  <circle cx="86" cy="40" r="6" fill="${c}" opacity=".15"/>
+  ${[0,45,90,135,180,225,270,315].map(a=>`<rect x="84.5" y="23" width="3" height="7" rx="1.5" fill="${c}" opacity=".8" transform="rotate(${a} 86 40)"/>`).join('')}
+  <circle cx="86" cy="40" r="3" fill="${c}" opacity=".8"/>
+</g>
+<!-- Tiny gear -->
+<g class="gear-tiny">
+  <circle cx="24" cy="84" r="10" fill="none" stroke="${c}" stroke-width="2" opacity=".65"/>
+  ${[0,60,120,180,240,300].map(a=>`<rect x="23" y="71" width="2.5" height="6" rx="1.2" fill="${c}" opacity=".65" transform="rotate(${a} 24 84)"/>`).join('')}
+  <circle cx="24" cy="84" r="2.5" fill="${c}" opacity=".65"/>
+</g>
+<!-- Piston -->
+<g class="piston-arm">
+  <rect x="116" y="28" width="16" height="40" rx="4" fill="${c}" opacity=".18"/>
+  <rect x="119" y="32" width="10" height="22" rx="3" fill="${c}" opacity=".5"/>
+  <line x1="124" y1="54" x2="124" y2="80" stroke="${c}" stroke-width="5" stroke-linecap="round"/>
+</g>
+<rect x="112" y="78" width="24" height="12" rx="4" fill="${c}" opacity=".3"/>
+<!-- Belt -->
+<g clip-path="url(#beltClip)">
+  ${[0,28,56,84,112,140].map(i=>`<rect class="belt-seg" x="${100+i}" y="94" width="22" height="12" rx="3" fill="${c}" opacity=".25" stroke="${c}" stroke-width=".5"/>`).join('')}
+</g>
+<defs><clipPath id="beltClip"><rect x="100" y="90" width="60" height="20"/></clipPath></defs>
+<rect x="100" y="90" width="60" height="20" rx="4" fill="none" stroke="${c}" stroke-width="1.5" opacity=".4"/>
+<!-- labels -->
+<text x="48" y="112" text-anchor="middle" font-size="7" font-weight="800" fill="${c}" opacity=".6" font-family="JetBrains Mono">MECH</text>
+<text x="135" y="112" text-anchor="middle" font-size="7" font-weight="800" fill="${c}" opacity=".6" font-family="JetBrains Mono">CONV</text>`;
+}
+
+function buildElectricalSvg(speed,color,danger){
+  const c=danger?'#FF5555':color;
+  const s=speed.toFixed(2);
+  return `
+<style>
+  .elec-arc{animation:arcFlash ${(speed*.5).toFixed(2)}s ease-in-out infinite;transform-origin:center}
+  .circ-pulse{animation:circPulse ${s}s ease-in-out infinite}
+  .circ-pulse2{animation:circPulse ${(speed*1.3).toFixed(2)}s ease-in-out infinite .4s}
+  .circ-pulse3{animation:circPulse ${(speed*.8).toFixed(2)}s ease-in-out infinite .8s}
+  .coil-rotor{transform-origin:80px 55px;animation:rotorSpin ${(speed*1.2).toFixed(2)}s linear infinite}
+  @keyframes arcFlash{0%,100%{opacity:.15;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+  @keyframes circPulse{0%,100%{stroke-width:1.5;opacity:.35}50%{stroke-width:3.5;opacity:1}}
+  @keyframes rotorSpin{to{transform:rotate(360deg)}}
+</style>
+<!-- Motor/coil body -->
+<rect x="58" y="34" width="44" height="42" rx="6" fill="${c}" opacity=".12" stroke="${c}" stroke-width="2"/>
+<!-- Rotating rotor cross -->
+<g class="coil-rotor">
+  <line x1="66" y1="55" x2="94" y2="55" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  <line x1="80" y1="41" x2="80" y2="69" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  <circle cx="80" cy="55" r="6" fill="${c}" opacity=".9"/>
+  <circle cx="80" cy="55" r="2.5" fill="var(--card)"/>
+</g>
+<!-- Lightning bolt arcs — the bigger the breakdown, the brighter -->
+<g class="elec-arc">
+  <polyline points="28,24 22,44 30,44 18,66" fill="none" stroke="${c}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g class="elec-arc" style="animation-delay:.35s">
+  <polyline points="140,28 134,48 142,46 130,72" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>
+</g>
+<!-- Circuit lines pulsing -->
+<line x1="8" y1="55" x2="58" y2="55" stroke="${c}" stroke-width="2" opacity=".4"/>
+<circle class="circ-pulse" cx="20" cy="55" r="5" fill="none" stroke="${c}"/>
+<circle class="circ-pulse2" cx="38" cy="55" r="4" fill="none" stroke="${c}"/>
+<line x1="102" y1="55" x2="152" y2="55" stroke="${c}" stroke-width="2" opacity=".4"/>
+<circle class="circ-pulse3" cx="120" cy="55" r="5" fill="none" stroke="${c}"/>
+<circle class="circ-pulse" cx="140" cy="55" r="4" fill="none" stroke="${c}"/>
+<!-- Bottom waveform -->
+<polyline class="circ-pulse2" points="18,96 32,84 44,96 56,84 68,96 80,84 92,96 104,84 116,96 130,84 142,96" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- labels -->
+<text x="80" y="110" text-anchor="middle" font-size="7" font-weight="800" fill="${c}" opacity=".6" font-family="JetBrains Mono">ELEC · MOTOR</text>`;
+}
+
+function buildHealthySvg(){
+  // Both gears + arc shown at slow peaceful speed
+  return buildMechanicalSvg(3.5,'var(--green)',false)+
+    `<g opacity=".4">`+buildElectricalSvg(4,'#34D399',false)+`</g>`;
+}
+
+/* ═══ SHIFT DUTY ROSTER — who is today's Mech/Elec supervisor ═══
+   DUTY_ROSTER = { 'YYYY-MM-DD':{ A:{mech,mechCode,elec,elecCode}, B:{...}, C:{...} } }
+   Set by admin in the app (dropdowns) → saved locally + synced to the
+   "ShiftRoster" Google Sheet tab. Everyone sees it on their dashboard. */
+let DUTY_ROSTER=JSON.parse(localStorage.getItem('mv_duty')||'{}');
+function saveDutyLocal(){try{localStorage.setItem('mv_duty',JSON.stringify(DUTY_ROSTER));}catch(e){}}
+function currentShiftCode(){const h=new Date().getHours();return h>=6&&h<14?'A':h>=14&&h<22?'B':'C';}
+function todayKey(){return new Date().toISOString().split('T')[0];}
+
+/* Is this supervisor logged in right now? (device lock = online) */
+function isSupervisorOnline(code){
+  if(!code) return false;
+  const acc=LOCAL_ACCESS[String(code)];
+  return !!(acc && acc.deviceId);
+}
+
+/* Mini equipment SVGs for the duty cards */
+function miniGearSvg(color,speed){
+  const c=color,s=speed.toFixed(2);
+  return `<style>.mg1{transform-origin:38px 40px;animation:mgSpin ${s}s linear infinite}.mg2{transform-origin:66px 28px;animation:mgSpin ${(speed*.7).toFixed(2)}s linear infinite reverse}@keyframes mgSpin{to{transform:rotate(360deg)}}</style>
+  <g class="mg1"><circle cx="38" cy="40" r="16" fill="none" stroke="${c}" stroke-width="2.5"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="36.5" y="21" width="3" height="7" rx="1.5" fill="${c}" transform="rotate(${a} 38 40)"/>`).join('')}<circle cx="38" cy="40" r="3.5" fill="${c}"/></g>
+  <g class="mg2"><circle cx="66" cy="28" r="10" fill="none" stroke="${c}" stroke-width="2" opacity=".75"/>${[0,60,120,180,240,300].map(a=>`<rect x="65" y="15.5" width="2.5" height="5" rx="1" fill="${c}" opacity=".75" transform="rotate(${a} 66 28)"/>`).join('')}<circle cx="66" cy="28" r="2.5" fill="${c}" opacity=".75"/></g>
+  <line x1="30" y1="62" x2="76" y2="62" stroke="${c}" stroke-width="2" opacity=".3" stroke-linecap="round"/>`;
+}
+function miniElecSvg(color,speed){
+  const c=color,s=speed.toFixed(2);
+  return `<style>.me1{animation:meFlash ${(speed*.6).toFixed(2)}s ease-in-out infinite}.me2{animation:meFlash ${s}s ease-in-out infinite .3s}.mr1{transform-origin:52px 36px;animation:mrSpin ${s}s linear infinite}@keyframes meFlash{0%,100%{opacity:.15}50%{opacity:1}}@keyframes mrSpin{to{transform:rotate(360deg)}}</style>
+  <rect x="38" y="22" width="28" height="28" rx="4" fill="${c}" opacity=".12" stroke="${c}" stroke-width="1.8"/>
+  <g class="mr1"><line x1="43" y1="36" x2="61" y2="36" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="52" y1="27" x2="52" y2="45" stroke="${c}" stroke-width="3" stroke-linecap="round"/><circle cx="52" cy="36" r="4" fill="${c}"/></g>
+  <g class="me1"><polyline points="20,18 15,32 21,31 12,46" fill="none" stroke="${c}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g class="me2"><polyline points="84,20 79,34 85,33 76,48" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/></g>
+  <polyline class="me2" points="16,62 28,55 40,62 52,55 64,62 76,55 88,62" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/>`;
+}
+
+/* Render the ON-DUTY HUD: current shift's supervisors + animations + online status */
+function renderHeroScore(k){
+  const shiftCode=currentShiftCode();
+  const roster=(DUTY_ROSTER[todayKey()]||{})[shiftCode]||null;
+  const warn=document.getElementById('dutyWarn');
+  const hero=document.getElementById('heroScore');
+  const hp=k?k.health:100;
+  const danger=hp<45;
+  if(hero)hero.classList.toggle('hs-danger',danger);
+  // speed: plant healthy = calm, critical = fast (still tied to plant condition)
+  const speed=hp>=70?3.0:hp>=45?1.8:1.0;
+
+  // MECHANICAL card
+  const mName=document.getElementById('mechSupName');
+  const mStat=document.getElementById('mechSupStatus');
+  const mSvg=document.getElementById('mechSvg');
+  const mCard=document.getElementById('dutyMech');
+  if(mName){
+    const sup=roster&&roster.mech?roster.mech:'';
+    const online=roster?isSupervisorOnline(roster.mechCode):false;
+    mName.innerText=sup||'Not set';
+    mName.style.color=sup?'var(--ink)':'var(--muted)';
+    if(mStat)mStat.innerHTML=sup?(online?'<span style="color:var(--green)">🟢 On Duty · Online</span>':'<span style="color:var(--muted)">⚪ Not logged in</span>'):'<span style="color:var(--muted)">—</span>';
+    if(mCard)mCard.classList.toggle('duty-online',online);
+    if(mSvg)mSvg.innerHTML=miniGearSvg(danger?'#FF5555':(online?'#10b981':'#4DA9E8'),speed);
+  }
+  // ELECTRICAL card
+  const eName=document.getElementById('elecSupName');
+  const eStat=document.getElementById('elecSupStatus');
+  const eSvg=document.getElementById('elecSvg');
+  const eCard=document.getElementById('dutyElec');
+  if(eName){
+    const sup=roster&&roster.elec?roster.elec:'';
+    const online=roster?isSupervisorOnline(roster.elecCode):false;
+    eName.innerText=sup||'Not set';
+    eName.style.color=sup?'var(--ink)':'var(--muted)';
+    if(eStat)eStat.innerHTML=sup?(online?'<span style="color:var(--green)">🟢 On Duty · Online</span>':'<span style="color:var(--muted)">⚪ Not logged in</span>'):'<span style="color:var(--muted)">—</span>';
+    if(eCard)eCard.classList.toggle('duty-online',online);
+    if(eSvg)eSvg.innerHTML=miniElecSvg(danger?'#FF5555':(online?'#10b981':'#F2A33C'),speed);
+  }
+  if(warn)warn.classList.toggle('hidden',!!roster);
+
+  // ADMIN: show duty setter with supervisor dropdowns
+  const setter=document.getElementById('dutySetter');
+  if(setter){
+    const isAdmin=!!(currentUser&&currentUser.admin);
+    setter.classList.toggle('hidden',!isAdmin);
+    if(isAdmin){
+      const shiftSel=document.getElementById('dutyShiftSel');
+      if(shiftSel&&!shiftSel.dataset.init){shiftSel.value=shiftCode;shiftSel.dataset.init='1';}
+      // build supervisor options from approved users
+      const users=Object.entries(LOCAL_ACCESS).filter(([,v])=>v.status==='Approved').map(([code,v])=>({code,name:v.name||('Emp '+code)}));
+      const opts=(sel,label)=>{
+        const el=document.getElementById(sel); if(!el)return;
+        const cur=el.value;
+        el.innerHTML=`<option value="">${label}</option>`+users.map(u=>`<option value="${u.code}">${u.name}</option>`).join('');
+        if(cur)el.value=cur;
+      };
+      opts('dutyMechSel','⚙️ Mechanical Supervisor…');
+      opts('dutyElecSel','⚡ Electrical Supervisor…');
+    }
+  }
+}
+
+/* Admin taps Save Duty → store locally + sync to ShiftRoster sheet */
+async function saveDuty(){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  const shift=document.getElementById('dutyShiftSel').value;
+  const mechCode=document.getElementById('dutyMechSel').value;
+  const elecCode=document.getElementById('dutyElecSel').value;
+  if(!mechCode&&!elecCode){showToast('⚠️ Select at least one supervisor');return;}
+  const mechName=mechCode&&LOCAL_ACCESS[mechCode]?LOCAL_ACCESS[mechCode].name:'';
+  const elecName=elecCode&&LOCAL_ACCESS[elecCode]?LOCAL_ACCESS[elecCode].name:'';
+  const day=todayKey();
+  if(!DUTY_ROSTER[day])DUTY_ROSTER[day]={};
+  DUTY_ROSTER[day][shift]={mech:mechName,mechCode,elec:elecName,elecCode};
+  saveDutyLocal();
+  renderHeroScore(calcKPIs());
+  showToast(`✓ ${shift} Shift duty saved`);
+  await postToSheet({action:'setShiftDuty',date:day,shift,mechName,mechCode,elecName,elecCode});
+}
+function updateClockShift(){
+  const cEl=document.getElementById('hsClock');
+  const sEl=document.getElementById('hsShift');
+  if(!cEl) return;
+  const now=new Date();
+  cEl.innerText=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const h=now.getHours();
+  const shift=h>=6&&h<14?'🌅 A Shift · ON DUTY':h>=14&&h<22?'🌇 B Shift · ON DUTY':'🌙 C Shift · ON DUTY';
+  if(sEl)sEl.innerText=shift;
+}
+setInterval(updateClockShift,1000);
+
+function renderDash(){
+  if(!document.getElementById('kpiGrid')) return;   // ← DOM guard
+  const k=calcKPIs();
+  renderHeroScore(k);
+  updateClockShift();
+  const items=[
+    {v:k.total,l:'Total Machines',ic:'🏭',c:'var(--ink)'},
+    {v:k.running,l:'Running',ic:'✅',c:'var(--green)'},
+    {v:k.breakdown,l:'Breakdown',ic:'⚠️',c:'var(--red)'},
+    {v:k.todayBd,l:"Today's BD",ic:'📋',c:'var(--amber)'},
+    {v:fmtDur(k.totalDt),l:"Today Downtime",ic:'⏱',c:'var(--red)'},
+    {v:k.health+'%',l:'Machine Health',ic:'❤️',c:k.health>70?'var(--green)':'var(--amber)'},
+    {v:fmtDur(k.mttr),l:'MTTR',ic:'🔧',c:'var(--blue)'},
+    {v:fmtDur(k.mtbf),l:'MTBF',ic:'📈',c:'var(--blue)'},
+    {v:k.oee+'%',l:'OEE',ic:'🎯',c:'var(--purple)'},
+    {v:k.open,l:'Open BD',ic:'🔓',c:'var(--amber)'},
+    {v:k.closed,l:'Closed BD',ic:'🔒',c:'var(--green)'},
+    {v:k.critical,l:'Critical',ic:'🔴',c:'var(--red)'},
+    {v:k.repeat,l:'Repeat Failures',ic:'🔁',c:'var(--purple)'},
+  ];
+  document.getElementById('kpiGrid').innerHTML=items.map((it,i)=>`
+    <div class="kpi" style="animation-delay:${i*.03}s">
+      <div class="ic">${it.ic}</div>
+      <div class="v" style="color:${it.c}">${it.v}</div>
+      <div class="l">${it.l}</div>
+    </div>`).join('');
+
+  const days=[]; for(let i=6;i>=0;i--){const x=new Date();x.setDate(x.getDate()-i);days.push(x.toISOString().split('T')[0]);}
+  const trend=days.map(d=>BREAKDOWNS.filter(b=>b.date===d).reduce((a,b)=>a+b.downtimeMin,0));
+  const max=Math.max(...trend,1);
+  document.getElementById('trendChart').innerHTML=trend.map((v,i)=>`
+    <div class="bar" style="height:${Math.max((v/max)*100,4)}%"><span>${v||''}</span></div>`).join('');
+
+  renderHeatmap();
+  renderHistorySlider();
+  renderCalendar();
+  renderPersonGraph();
+
+  const open=BREAKDOWNS.filter(b=>b.status==='Open');
+  const openEl=document.getElementById('openBdList'); if(!openEl) return;
+  openEl.innerHTML=open.length?open.map(b=>`
+    <div class="card" style="margin-bottom:12px;border-left:6px solid var(--red);cursor:pointer" onclick='openBd("${b.id}")'>
+      <div class="flex jb ac" style="margin-bottom:8px">
+        <div class="b" style="font-size:16px">${b.machine}${b.section?' — '+b.section:''}</div>
+        <span class="pill pill-red">Open</span>
+      </div>
+      <div class="b" style="font-size:15px;margin-bottom:6px;color:var(--ink2)">Problem: ${b.problem}</div>
+      <div class="flex g2 fw">
+        <span class="pill pill-blue">🏭 ${b.line}</span>
+        <span class="pill pill-amber">📅 ${b.date}</span>
+        <span class="pill pill-amber">🕒 ${b.time}</span>
+        <span class="pill pill-purple">⏱ ${fmtDur(b.downtimeMin)}</span>
+      </div>
+      <div class="t-xs" style="color:var(--muted);margin-top:8px">Part: ${b.part} · Root Cause: ${b.root} · Tech: ${b.tech}</div>
+    </div>`).join(''):'<div class="card tc t-sm" style="color:var(--green)">✓ No open breakdowns</div>';
+}
+function fmtDur(m){if(!m)return'0m';if(m<60)return m+'m';const h=Math.floor(m/60),mm=m%60;return h+'h'+(mm?' '+mm+'m':'');}
+
+/* ═══════════ LINE HEALTH BAR GRAPH ═══════════
+   One horizontal bar per line. More breakdowns on a line → health drops →
+   bar shrinks AND its colour shifts green → amber → red automatically.
+   Health = 100 − (open BD × 15) − (today's closed BD × 5), floor 5%. */
+/* ═══════════ HEALTH MONITOR — HEATMAP GRID ═══════════
+   ONE unified section. Each machine = one colored tile. Tap → drawer.
+   Grouped by line, with per-line header stats.
+   Color shifts green → amber → red as breakdowns accumulate. */
+
+/* Short label: 'BM Stacking' → 'BS', 'COS' → 'COS', 'M1' → 'M1' */
+function shortMachineLabel(name){
+  name=String(name||'').trim();
+  if(/^[A-Z0-9]{1,4}$/i.test(name)) return name;
+  return name.split(/[\s\-]+/).map(w=>w[0]).join('').toUpperCase().slice(0,4);
+}
+function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/'/g,"\\'");}
+
+/* Area → display group. Order: 1=PLP, 2=ASM, 3=F&F.
+   Anything unknown gets group 9 (pushed to the bottom). */
+function getAreaGroup(area){
+  if(!area) return 9;
+  const a=String(area).toLowerCase();
+  // PLP  → Pasting / Oxide / Group Casting
+  if(a.includes('pasting')||a.includes('oxide')||a.includes('casting')) return 1;
+  // ASM  → Assembly
+  if(a.includes('assembly')) return 2;
+  // F&F  → Formation / Finishing / Oven
+  if(a.includes('oven')||a.includes('formation')||a.includes('finishing')) return 3;
+  return 9;
+}
+function getAreaGroupName(g){return {1:'PLP',2:'ASM',3:'F&F'}[g]||'OTHER';}
+/* 'Line 12' → 12, 'P01' → 1, 'N01' → 1, 'Line 1' → 1 */
+function extractLineNum(lineName){const m=String(lineName).match(/(\d+)/);return m?parseInt(m[1],10):0;}
+
+let EXPANDED_LINES = new Set();
+
+function toggleLineExpand(line) {
+  if (EXPANDED_LINES.has(line)) EXPANDED_LINES.delete(line);
+  else EXPANDED_LINES.add(line);
+  renderHeatmap();
+}
+
+function renderHeatmap(){
+  const wrap=document.getElementById('heatmap'); if(!wrap) return;
+  const statsEl=document.getElementById('hmStats'); if(statsEl) statsEl.innerHTML='';
+  const list=machineStats();
+  if(!list.length){
+    wrap.innerHTML='<div class="t-sm" style="color:var(--muted);padding:16px 8px">No machines in this area</div>';
+    return;
+  }
+
+  let nOk=0,nWarn=0,nCrit=0;
+  list.forEach(m=>{ if(m.health>=70) nOk++; else if(m.health>=45) nWarn++; else nCrit++; });
+  if(statsEl){
+    statsEl.innerHTML=`<span class="refresh-chip"><span class="rdot"></span>${list.length} machines</span>
+      <span style="font-size:10px;font-weight:800;color:var(--green);margin-left:6px">● ${nOk}</span>
+      <span style="font-size:10px;font-weight:800;color:var(--amber)">● ${nWarn}</span>
+      <span style="font-size:10px;font-weight:800;color:var(--red)">● ${nCrit}</span>`;
+  }
+
+  const byLine={};
+  list.forEach(m=>{ if(!byLine[m.line]) byLine[m.line]=[]; byLine[m.line].push(m); });
+  const lineKeys=Object.keys(byLine).sort((a,b)=>{
+    const gA=getAreaGroup(a.split('·')[0]);
+    const gB=getAreaGroup(b.split('·')[0]);
+    if(gA!==gB) return gA-gB;
+    return extractLineNum(a)-extractLineNum(b);
+  });
+
+  let html=`<div class="hm-summary">
+    <div class="hm-pill"><div class="hm-n" style="color:var(--green)">${nOk}</div><div class="hm-l">Healthy</div></div>
+    <div class="hm-pill"><div class="hm-n" style="color:var(--amber)">${nWarn}</div><div class="hm-l">Warning</div></div>
+    <div class="hm-pill"><div class="hm-n" style="color:var(--red)">${nCrit}</div><div class="hm-l">Critical</div></div>
+  </div>`;
+
+  let currentGroup=0;
+  lineKeys.forEach((line)=>{
+    const area=line.includes('·')?line.split('·')[0].trim():'';
+    const g=getAreaGroup(area);
+    const machines=byLine[line];
+    const avgHealth=Math.round(machines.reduce((s,m)=>s+m.health,0)/machines.length);
+    const lineCrit=machines.filter(m=>m.health<45).length;
+    const lineWarn=machines.filter(m=>m.health>=45&&m.health<70).length;
+    const isExpanded=EXPANDED_LINES.has(line);
+    const statusCls=avgHealth>=70?'ok':avgHealth>=45?'warn':'crit';
+
+    if(g!==currentGroup){
+      currentGroup=g;
+      html+=`<div class="hm-group-header">
+        <span class="hm-group-badge" data-group="${g}">${getAreaGroupName(g)}</span>
+        <span class="hm-group-label">${g===1?'PLP':g===2?'ASM':g===3?'F&F':'Other'}</span>
+      </div>`;
+    }
+
+    html+=`
+    <div class="line-expand-wrap">
+      <div class="line-card ${statusCls}" onclick="toggleLineExpand('${escAttr(line)}')">
+        <div class="line-info">
+          <div class="line-title">${escAttr(line)}</div>
+          <div class="line-stat-text">${machines.length} machines · ${lineCrit?`⚠ ${lineCrit} crit`:lineWarn?`${lineWarn} warn`:'✓ all healthy'}</div>
+        </div>
+        <div class="flex ac g2">
+          <div class="line-pct-text" style="color:var(--${statusCls==='ok'?'green':statusCls==='warn'?'amber':'red'})">${avgHealth}%</div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="transition:.3s;transform:${isExpanded?'rotate(180deg)':'rotate(0)'}"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="mc-grid" style="display:${isExpanded?'grid':'none'}">
+        ${machines.map((m,i)=>`
+          <div class="mc-tile ${m.health>=70?'ok':m.health>=45?'warn':'crit'}" 
+               style="animation-delay:${(i*0.04).toFixed(2)}s"
+               onclick="event.stopPropagation();openMachine('${escAttr(m.line)}','${escAttr(m.machine)}')">
+            <div class="mc-tile-label">${shortMachineLabel(m.machine)}</div>
+            <div class="mc-tile-pct">${m.health}%</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+
+  wrap.innerHTML=html;
+}
+
+/* ═══════════ AUTO-REFRESH — every 5 minutes ═══════════
+   Pulls fresh data from Google Sheets, detects NEW breakdowns that other
+   users logged, flashes them blue on the dashboard, and shows a toast. */
+const AUTO_REFRESH_MS=1*60*1000;   // 1 minute — change back to 5*60*1000 for 5 min
+let knownBdIds=new Set();
+function snapshotBdIds(){ knownBdIds=new Set(BREAKDOWNS.map(b=>b.id)); }
+/* v1.5 — Manual "Sync Now" button (🔄 in topbar). Forces immediate reload
+   from Google Sheets so admins see machine renames/adds instantly instead
+   of waiting for the 5-minute auto-refresh. */
+async function forceSyncNow(){
+  const btn=document.getElementById('syncBtn');
+  if(btn){btn.style.animation='spin 1s linear infinite';btn.style.pointerEvents='none';}
+  showToast('🔄 Syncing from Google Sheets…');
+  const before=BREAKDOWNS.length+AREAS_DATA.length;
+  await loadFromSheet();
+  const after=BREAKDOWNS.length+AREAS_DATA.length;
+  if(btn){btn.style.animation='';btn.style.pointerEvents='';}
+  showToast(after!==before?'✓ Synced! Data refreshed.':'✓ Already up to date');
+}
+
+async function autoRefresh(){
+  if(!currentUser) return;                       // not logged in yet
+  const before=new Set(BREAKDOWNS.map(b=>b.id));
+  await loadFromSheet();                          // re-sync everything (breakdowns, machines, materials, KB)
+  const fresh=BREAKDOWNS.filter(b=>!before.has(b.id));
+  if(fresh.length){
+    showToast(`🔄 ${fresh.length} new breakdown${fresh.length>1?'s':''} synced`);
+    // 🎮 game-style red screen flash if any new breakdown is Open/critical
+    if(fresh.some(b=>b.status==='Open')){
+      document.body.classList.remove('crit-flash');
+      void document.body.offsetWidth;   // restart animation
+      document.body.classList.add('crit-flash');
+      setTimeout(()=>document.body.classList.remove('crit-flash'),1300);
+    }
+    // flash the new cards so they're easy to spot
+    setTimeout(()=>{
+      fresh.forEach(b=>{
+        document.querySelectorAll(`[onclick*="${b.id}"]`).forEach(elm=>elm.classList.add('new-item-flash'));
+      });
+    },400);
+  }
+  snapshotBdIds();
+}
+setInterval(autoRefresh,AUTO_REFRESH_MS);
+
+/* ═══════════ RECENT HISTORY SLIDER ═══════════ */
+function renderHistorySlider(){
+  const el=document.getElementById('historySlider'); if(!el) return;
+  const list=[...BREAKDOWNS].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,8);
+  el.innerHTML=list.length?list.map(b=>`
+    <div class="slide-card hist-card" onclick='openBd("${b.id}")'>
+      <div class="flex jb ac" style="margin-bottom:8px">
+        <span class="pill ${b.status==='Open'?'pill-red':'pill-green'}">${b.status}</span>
+        <span class="t-xs" style="color:var(--muted)">${b.date}</span>
+      </div>
+      <div class="b" style="font-size:14px;margin-bottom:4px">${b.machine}${b.section?' · '+b.section:''}</div>
+      <div class="t-xs" style="color:var(--ink2);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${b.problem}</div>
+      <div class="flex g2 fw"><span class="pill pill-blue">🕒 ${b.time}</span><span class="pill pill-purple">👤 ${String(b.tech||'—').split(' ')[0]}</span></div>
+    </div>`).join('') : '<div class="t-sm" style="color:var(--muted);padding:10px">No history yet</div>';
+}
+
+/* ═══════════ DASHBOARD CALENDAR + PERSON GRAPH ═══════════ */
+let calDate=new Date();
+let calSelected=new Date().toISOString().split('T')[0];
+function calMove(delta){calDate.setMonth(calDate.getMonth()+delta);renderCalendar();}
+function renderCalendar(){
+  const title=document.getElementById('calTitle'); if(!title)return;
+  const y=calDate.getFullYear(), m=calDate.getMonth();
+  title.innerText=calDate.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const today=new Date().toISOString().split('T')[0];
+  const bdDates={}; BREAKDOWNS.forEach(b=>bdDates[b.date]=(bdDates[b.date]||0)+1);
+  let html='';
+  for(let i=0;i<first;i++)html+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    html+=`<div class="cday${bdDates[ds]?' has':''}${ds===today?' today':''}${ds===calSelected?' sel':''}" onclick="calSelected='${ds}';renderCalendar();renderCalendarDetails()">${d}</div>`;
+  }
+  document.getElementById('calDays').innerHTML=html;
+  renderCalendarDetails();
+}
+function renderCalendarDetails(){
+  const el=document.getElementById('calBreakdownDetails'); if(!el)return;
+  const list=BREAKDOWNS.filter(b=>b.date===calSelected);
+  if(!list.length){el.innerHTML=`<div class="card tc t-sm" style="color:var(--green)">✓ No breakdowns on ${calSelected}</div>`;return;}
+  el.innerHTML=list.map(b=>`
+    <div class="card" style="margin-bottom:10px;border-left:6px solid ${b.status==='Open'?'var(--red)':'var(--green)'};cursor:pointer" onclick='openBd("${b.id}")'>
+      <div class="flex jb ac"><div class="b">${b.machine}${b.section?' · '+b.section:''}</div><span class="pill ${b.status==='Open'?'pill-red':'pill-green'}">${b.status}</span></div>
+      <div class="t-sm" style="color:var(--ink2);margin:5px 0"><b>Problem:</b> ${b.problem}</div>
+      <div class="flex g2 fw"><span class="pill pill-blue">${b.line}</span><span class="pill pill-amber">🕒 ${b.time}</span><span class="pill pill-purple">👤 ${b.tech}</span><span class="pill pill-amber">⏱ ${fmtDur(b.downtimeMin)}</span></div>
+    </div>`).join('');
+}
+/* Find a technician's assigned Area — searches LOCAL_ACCESS (which mirrors
+   the Employees sheet). Returns '' if not found. */
+function getTechArea(techName){
+  if(!techName) return '';
+  for(const code in LOCAL_ACCESS){
+    const acc=LOCAL_ACCESS[code];
+    if(acc && acc.name===techName) return acc.area||'';
+  }
+  return '';
+}
+
+function renderPersonGraph(){
+  const el=document.getElementById('personGraph'); if(!el)return;
+  const isAdmin=!!(currentUser&&currentUser.admin);
+  const userArea=(currentUser&&currentUser.area)?String(currentUser.area).trim():'';
+
+  // Update the section title with area context
+  const titleEl=document.getElementById('attendedTitle'); if(titleEl){
+    titleEl.innerHTML=isAdmin
+      ? 'Breakdown Attended By <span class="refresh-chip" style="margin-left:8px"><span class="rdot"></span>All Areas</span>'
+      : `Breakdown Attended By <span class="refresh-chip" style="margin-left:8px"><span class="rdot"></span>📍 ${userArea||'—'}</span>`;
+  }
+
+  const counts={};
+  BREAKDOWNS.forEach(b=>{
+    const area=getTechArea(b.tech);
+    // non-admin users only see technicians from their own Area
+    if(!isAdmin && userArea && area && area!==userArea) return;
+    counts[b.tech]=(counts[b.tech]||0)+1;
+  });
+
+  const arr=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(...arr.map(x=>x[1]),1);
+  const total=arr.reduce((s,[,c])=>s+c,0);
+
+  el.innerHTML=arr.length?`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+      <span class="t-xs b" style="color:var(--muted)">TOTAL BREAKDOWNS ATTENDED</span>
+      <span class="mono b" style="color:var(--primary-dd)">${total}</span>
+    </div>
+    ${arr.map(([name,count],rankIdx)=>{
+      const area=getTechArea(name);
+      const medal=rankIdx===0?'🥇':rankIdx===1?'🥈':rankIdx===2?'🥉':'';
+      return `<div class="person-row">
+        <div style="min-width:0">
+          <div class="t-xs b" style="color:var(--ink2)">${medal?`<span class="rank-medal">${medal}</span>`:''}${String(name||'—').split(' ')[0]}</div>
+          ${area?`<div class="t-xs" style="color:var(--muted);font-size:9px;margin-top:1px">📍 ${area}</div>`:`<div class="t-xs" style="color:var(--muted);font-size:9px;margin-top:1px">— no area</div>`}
+        </div>
+        <div class="pbar"><div style="width:${(count/max)*100}%"></div></div>
+        <div style="text-align:right;min-width:40px">
+          <div class="mono b" style="color:var(--primary-dd)">${count}</div>
+          <div class="t-xs" style="color:var(--muted);font-size:9px">${Math.round((count/total)*100)}%</div>
+        </div>
+      </div>`;
+    }).join('')}`:`<div class="tc t-sm" style="color:var(--muted);padding:10px">No technician data in this area</div>`;
+}
+
+/* ═══════════ MACHINE STATS / HEALTH ═══════════ */
+function machineStats(){
+  const all=[];
+  for(const line of LINES){
+    const machinesOfLine=MACHINES[line]||[];   // ← guard: never crash on missing key
+    for(const mc of machinesOfLine){
+      // Flexible matching: breakdowns store the line the USER typed
+      // (e.g. "Line 1"), but our key may be prefixed ("Assembly · Line 1").
+      // Match by machine name + line contained either way.
+      const bds=BREAKDOWNS.filter(b=>{
+        const bMach=String(b.machine||'').trim().toLowerCase();
+        const bLine=String(b.line||'').trim().toLowerCase();
+        const keyLine=String(line).trim().toLowerCase();
+        const machMatch=bMach===String(mc).trim().toLowerCase();
+        const lineMatch=bLine===keyLine || keyLine.endsWith('· '+bLine) || keyLine.includes(bLine) || bLine.includes(keyLine);
+        return machMatch && (lineMatch || !bLine);
+      });
+      const today=new Date().toISOString().split('T')[0];
+      const todayBds=bds.filter(b=>b.date===today);
+      const dt=bds.reduce((a,b)=>a+b.downtimeMin,0);
+      const rt=bds.reduce((a,b)=>a+b.repairMin,0);
+      const mttr=bds.length?Math.round(rt/bds.length):0;
+      const opTime=8*60*7;
+      const mtbf=bds.length?Math.round((opTime-dt)/bds.length):opTime;
+      const combo={};bds.forEach(b=>{combo[b.part]=(combo[b.part]||0)+1;});
+      const repeat=Object.values(combo).filter(v=>v>1).reduce((a,v)=>a+v,0);
+      const open=bds.some(b=>b.status==='Open');
+      let health=100; health-=bds.length*6; health-=repeat*5; health-=(open?20:0); health=Math.max(10,Math.min(100,health));
+      const last=bds.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time))[0];
+      all.push({line,machine:mc,bds,health,mttr,mtbf,dt,todayBd:todayBds.length,repeat,open,last,count:bds.length,
+        avgRepair:bds.length?Math.round(rt/bds.length):0});
+    }
+  }
+  return all.sort((a,b)=>a.health-b.health);
+}
+function healthColor(h){return h>=70?'var(--green)':h>=45?'var(--amber)':'var(--red)';}
+function healthStatus(h){return h>=70?'Healthy':h>=45?'Warning':'Critical';}
+function ringSVG(pct,color){
+  const r=22,c=2*Math.PI*r,off=c-(c*pct/100);
+  return `<svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="27" cy="27" r="22" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 27 27)"/><text x="27" y="31" text-anchor="middle" font-size="13" font-weight="800" fill="${color}" font-family="JetBrains Mono">${pct}</text></svg>`;
+}
+function machineRow(m){
+  return `<div class="row-card" onclick='openMachine("${m.line}","${m.machine}")'>
+    <div class="health-ring">${ringSVG(m.health,healthColor(m.health))}</div>
+    <div class="grow">
+      <div class="b" style="font-size:16px">${m.machine}</div>
+      <div class="t-xs" style="color:var(--muted);margin:3px 0 7px">${m.line}${m.last?' · '+m.last.section:''}</div>
+      <div class="flex g2 fw">
+        <span class="pill ${m.health>=70?'pill-green':m.health>=45?'pill-amber':'pill-red'}">${healthStatus(m.health)}</span>
+        <span class="pill pill-blue">BD ${m.count}</span>
+        ${m.repeat?`<span class="pill pill-purple">🔁 ${m.repeat}</span>`:''}
+      </div>
+    </div>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+  </div>`;
+}
+function renderMachines(q){
+  let list=machineStats();
+  if(q){q=q.toLowerCase();list=list.filter(m=>m.machine.toLowerCase().includes(q)||m.line.toLowerCase().includes(q));}
+  document.getElementById('machineList').innerHTML=list.map(m=>machineRow(m)).join('');
+}
+function openMachine(line,machine){
+  const m=machineStats().find(x=>x.line===line&&x.machine===machine);
+  const last=m.last;
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="flex ac g3" style="margin-bottom:18px">
+      <div style="width:70px;height:70px">${ringSVG(m.health,healthColor(m.health)).replace('54','70').replace('54','70')}</div>
+      <div class="grow">
+        <div class="bb" style="font-size:20px">${m.machine}</div>
+        <div class="t-sm" style="color:var(--muted)">${m.line}${last?' · '+last.section:''}</div>
+        <span class="pill ${m.health>=70?'pill-green':m.health>=45?'pill-amber':'pill-red'}" style="margin-top:6px">${healthStatus(m.health)} · ${m.open?'Running issue':'Running'}</span>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:16px">
+      <div class="kpi"><div class="v" style="font-size:20px;color:${healthColor(m.health)}">${m.health}%</div><div class="l">Health Score</div></div>
+      <div class="kpi"><div class="v" style="font-size:20px">${m.todayBd}</div><div class="l">Today BD</div></div>
+      <div class="kpi"><div class="v" style="font-size:20px">${m.count}</div><div class="l">Total BD</div></div>
+      <div class="kpi"><div class="v" style="font-size:20px;color:var(--purple)">${m.repeat}</div><div class="l">Repeat Fail</div></div>
+      <div class="kpi"><div class="v" style="font-size:20px;color:var(--blue)">${fmtDur(m.mttr)}</div><div class="l">MTTR</div></div>
+      <div class="kpi"><div class="v" style="font-size:20px;color:var(--blue)">${fmtDur(m.mtbf)}</div><div class="l">MTBF</div></div>
+    </div>
+    ${last?`<div class="sec">Last Breakdown</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="dr-row"><span class="k">Date</span><span class="vv">${last.date} ${last.time}</span></div>
+      <div class="dr-row"><span class="k">Problem</span><span class="vv">${last.problem}</span></div>
+      <div class="dr-row"><span class="k">Root Cause</span><span class="vv">${last.root}</span></div>
+      <div class="dr-row"><span class="k">Corrective</span><span class="vv">${last.corr}</span></div>
+      <div class="dr-row"><span class="k">Technician</span><span class="vv">${last.tech}</span></div>
+      <div class="dr-row"><span class="k">Avg Repair</span><span class="vv">${fmtDur(m.avgRepair)}</span></div>
+      <div class="dr-row"><span class="k">Total Downtime</span><span class="vv">${fmtDur(m.dt)}</span></div>
+    </div>`:''}
+    <div class="sec">Breakdown History</div>
+    ${m.bds.length?m.bds.map(b=>`<div class="card" style="margin-bottom:10px">
+      <div class="flex jb"><b>${b.problem}</b><span class="pill ${b.status==='Open'?'pill-red':'pill-green'}">${b.status}</span></div>
+      <div class="t-xs" style="color:var(--muted);margin:6px 0">${b.date} ${b.time} · ${b.tech}</div>
+      <div class="flex g2 fw"><span class="pill pill-blue">${b.root}</span><span class="pill pill-amber">⏱ ${fmtDur(b.downtimeMin)}</span><span class="pill pill-green">🔧 ${fmtDur(b.repairMin)}</span></div>
+    </div>`).join(''):'<div class="t-sm" style="color:var(--muted)">No history</div>'}
+    <button class="btn btn-ghost wfull" style="margin-top:16px" onclick="closeDrawer()">Close</button>`;
+  openDrawer();
+}
+
+/* ═══════════ BREAKDOWN ROW + HISTORY ═══════════ */
+function bdRow(b){
+  return `<div class="row-card" onclick='openBd("${b.id}")'>
+    <div style="width:46px;height:46px;border-radius:14px;background:var(--red-s);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">⚠️</div>
+    <div class="grow">
+      <div class="b" style="font-size:15px">${b.problem}</div>
+      <div class="t-xs" style="color:var(--muted);margin:3px 0 6px">${b.machine} · ${b.section} · ${b.date} ${b.time}</div>
+      <div class="flex g2 fw"><span class="pill ${b.status==='Open'?'pill-red':'pill-green'}">${b.status}</span><span class="pill pill-blue">${b.root}</span></div>
+    </div>
+  </div>`;
+}
+function renderHistory(q){
+  let list=[...BREAKDOWNS].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  if(q){q=q.toLowerCase();list=list.filter(b=>[b.problem,b.machine,b.tech,b.root,b.spare,b.date,b.part].join(' ').toLowerCase().includes(q));}
+  document.getElementById('historyList').innerHTML=list.length?list.map(b=>bdRow(b)).join(''):'<div class="card tc t-sm" style="color:var(--muted)">No records found</div>';
+}
+function openBd(id){
+  const b=BREAKDOWNS.find(x=>x.id===id);
+  if(!b){showToast('⚠️ Breakdown not found');return;}   // ← guard against missing id
+  const similar=BREAKDOWNS.filter(x=>x.id!==id&&(x.part===b.part||x.root===b.root));
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="flex jb ac" style="margin-bottom:14px">
+      <div><div class="bb" style="font-size:18px">${b.problem}</div><div class="t-xs" style="color:var(--muted)">${b.id} · ${b.date} ${b.time}</div></div>
+      <span class="pill ${b.status==='Open'?'pill-red':'pill-green'}">${b.status}</span>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="dr-row"><span class="k">Line / Machine</span><span class="vv">${b.line} · ${b.machine}</span></div>
+      <div class="dr-row"><span class="k">Section / Part</span><span class="vv">${b.section} · ${b.part}</span></div>
+      <div class="dr-row"><span class="k">Root Cause</span><span class="vv">${b.root}</span></div>
+      <div class="dr-row"><span class="k">Corrective</span><span class="vv">${b.corr}</span></div>
+      <div class="dr-row"><span class="k">Preventive</span><span class="vv">${b.prev}</span></div>
+      <div class="dr-row"><span class="k">Technician</span><span class="vv">${b.tech} (${b.code})</span></div>
+      <div class="dr-row"><span class="k">Spare Used</span><span class="vv">${b.spare} × ${b.qty}</span></div>
+      <div class="dr-row"><span class="k">Repair Time</span><span class="vv">${fmtDur(b.repairMin)}</span></div>
+      <div class="dr-row"><span class="k">Downtime</span><span class="vv">${fmtDur(b.downtimeMin)}</span></div>
+    </div>
+    ${similar.length?`<div class="sec">🧠 AI Learning · Similar Repairs</div>
+    <div class="ai-card">
+      ${similar.slice(0,3).map(s=>`<div class="ai-item"><div><b>${s.machine}</b><div class="t-xs" style="color:var(--muted)">${s.root} → ${s.corr}</div></div><div class="tc"><div class="t-xs b">${fmtDur(s.repairMin)}</div><div class="t-xs" style="color:var(--muted)">${s.tech}</div></div></div>`).join('')}
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)" class="t-sm"><b>✓ Recommended:</b> ${similar[0].corr} (Success rate ${85+similar.length*2}%)</div>
+    </div>`:''}
+    <button class="btn btn-ghost wfull" onclick="closeDrawer()">Close</button>`;
+  openDrawer();
+}
+
+/* ═══════════ MATERIAL SEARCH — only show results when typing ═══════════ */
+function highlightText(text,tokens){
+  let out=String(text);
+  tokens.forEach(t=>{
+    if(!t) return;
+    const re=new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig');
+    out=out.replace(re,'<mark style="background:var(--amber-s);color:var(--ink);border-radius:4px;padding:0 2px">$1</mark>');
+  });
+  return out;
+}
+function renderMats(q){
+  q=(q||'').trim().toLowerCase();
+  const countEl=document.getElementById('matCount');
+  const listEl=document.getElementById('matList');
+  if(!q){
+    countEl.innerText='';
+    listEl.innerHTML='<div class="tc" style="padding:50px 20px;color:var(--muted)"><div style="font-size:42px;margin-bottom:12px">🔍</div><div class="b" style="font-size:16px">Search Materials</div><div class="t-sm" style="margin-top:6px">Type a part number like <b>262-030</b><br>or a name like <b>cam</b>, <b>bearing</b>, <b>chain</b></div></div>';
+    return;
+  }
+  const tokens=q.split(/[\s,]+/).filter(t=>t);
+  // Related-search scoring across ALL 7 sheet columns:
+  // Part_Number, Item_Description, Machine, Location, Stock_Qty, Price, Category
+  const res=MATS.map(m=>{
+    let sc=0;
+    const partN=String(m.p||'').toLowerCase();
+    const descN=String(m.n||'').toLowerCase();
+    const machN=String(m.m||'').toLowerCase();
+    const locN=String(m.l||'').toLowerCase();
+    const catN=String(m.c||'').toLowerCase();
+    const qtyN=String(m.q??'').toLowerCase();
+    const prN=String(m.pr??'').toLowerCase();
+    const tx=[partN,descN,machN,locN,catN,qtyN,prN].join(' ');
+    tokens.forEach(t=>{
+      if(partN.includes(t))sc+=10;      // Part_Number — highest priority
+      if(descN.includes(t))sc+=6;       // Item_Description
+      if(catN.includes(t))sc+=4;        // Category
+      if(machN.includes(t))sc+=3;       // Machine
+      if(locN.includes(t))sc+=3;        // Location
+      if(qtyN===t||prN===t)sc+=2;       // exact Stock_Qty / Price match
+      if(tx.includes(t))sc+=1;          // fallback: any-field partial match
+    });
+    return{...m,sc};}).filter(m=>m.sc>0).sort((a,b)=>b.sc-a.sc);
+  countEl.innerText=`${res.length} related result${res.length===1?'':'s'} for "${q}"`;
+  listEl.innerHTML=res.length?res.map((m,i)=>`
+    <div class="row-card" data-mat-idx="${i}">
+      <div style="min-width:60px;height:60px;border-radius:16px;background:var(--blue-s);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--primary-dd);font-family:'JetBrains Mono',monospace;font-weight:800;font-size:11px;flex-shrink:0;text-align:center;line-height:1.2">${m.p.split('-').slice(0,2).join('-')}<span style="font-size:9px;color:var(--muted)">${m.p.split('-')[2]||''}</span></div>
+      <div class="grow">
+        <div class="b" style="font-size:15px">${highlightText(m.n,tokens)}</div>
+        <div class="t-xs" style="color:var(--muted);margin:3px 0 7px">${highlightText(m.p,tokens)} · ${highlightText(m.m,tokens)} · ${highlightText(m.l,tokens)}</div>
+        <div class="flex g2 fw"><span class="pill pill-blue">${highlightText(m.c||'—',tokens)}</span><span class="pill pill-green">STOCK ${m.q??'—'}</span><span class="pill pill-amber">₹${isNaN(Number(m.pr))?'—':Number(m.pr).toLocaleString('en-IN')}</span></div>
+      </div>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`).join(''):`<div class="card tc t-sm" style="color:var(--muted)">No materials found for "${q}"</div>`;
+  // safely attach click handlers (no inline onclick, no HTML-injection risk)
+  listEl.querySelectorAll('.row-card[data-mat-idx]').forEach(el=>{
+    el.addEventListener('click',()=>openMat(res[+el.dataset.matIdx]));
+  });
+}
+function openMat(m){
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="bb" style="font-size:20px">${m.n}</div>
+    <div class="mono t-sm" style="color:var(--primary-dd);font-weight:700;margin-bottom:18px">${m.p}</div>
+    ${m.img?`<img src="${m.img}" style="width:100%;border-radius:16px;margin-bottom:18px">`:'<div class="tc" style="padding:28px;background:var(--blue-s);border-radius:16px;color:var(--muted);font-weight:700;margin-bottom:18px">No Reference Image Available</div>'}
+    <div class="card" style="margin-bottom:16px">
+      <div class="dr-row"><span class="k">Part Number</span><span class="vv mono">${m.p}</span></div>
+      <div class="dr-row"><span class="k">Item Description</span><span class="vv">${m.n}</span></div>
+      <div class="dr-row"><span class="k">Machine</span><span class="vv">${m.m}</span></div>
+      <div class="dr-row"><span class="k">Location</span><span class="vv">${m.l}</span></div>
+      <div class="dr-row"><span class="k">Stock Qty</span><span class="vv">${m.q??'—'}</span></div>
+      <div class="dr-row"><span class="k">Price</span><span class="vv">₹${isNaN(Number(m.pr))?'—':Number(m.pr).toLocaleString('en-IN')}</span></div>
+      <div class="dr-row"><span class="k">Category</span><span class="vv">${m.c}</span></div>
+    </div>
+    <button class="btn btn-ghost wfull" onclick="closeDrawer()">Close</button>`;
+  openDrawer();
+}
+
+/* ═══════════ NEW BREAKDOWN — SIMPLE FORM ═══════════ */
+/* fillSelect kept only for the ManualKB admin panel and any future selects.
+   Breakdown form now uses plain text inputs — no dropdowns. */
+function fillSelect(id,arr){
+  const el=document.getElementById(id); if(!el||el.tagName!=='SELECT') return;
+  const opts=(arr&&arr.length)?arr:['—'];
+  el.innerHTML=opts.map(a=>`<option value="${String(a).replace(/"/g,'&quot;')}">${a}</option>`).join('');
+  el.selectedIndex=0;
+}
+function startNew(){
+  nav('new');
+  const now=new Date();
+  document.getElementById('bdDate').value=now.toISOString().split('T')[0];
+  document.getElementById('bdTime').value=now.toTimeString().slice(0,5);
+  // All fields are plain text inputs — clear them all
+  ['selLine','selMachine','selSection','selPart','bdProblem','selTech',
+   'manRoot','manPrev','manSpare'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const corrEl=document.getElementById('manCorr'); if(corrEl) corrEl.value='';
+  const qtyEl=document.getElementById('manQty'); if(qtyEl) qtyEl.value=1;
+  ['manRepairMin','manDowntimeMin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const stEl=document.getElementById('manStatus'); if(stEl) stEl.value='Open';
+  document.getElementById('aiResults').innerHTML='';
+}
+/* Tap-to-fill helper: AI suggestions are HINTS only — nothing is written
+   into the report unless the technician taps "Use" (or types it in
+   manually). The report is always a manual, human-verified entry. */
+function fillField(id,text){
+  const el=document.getElementById(id); if(!el) return;
+  el.value=text;
+  el.focus();
+  showToast('✓ Filled — you can still edit before saving');
+}
+function runAI(){
+  const problem=document.getElementById('bdProblem').value.trim();
+  const part=document.getElementById('selPart').value;
+  if(!problem){showToast('⚠️ Enter problem description');return;}
+  const text=(problem+' '+part).toLowerCase();
+  let best=AI_KB[0],score=0;
+  AI_KB.forEach(kb=>{const s=kb.kw.filter(k=>text.includes(k)).length;if(s>score){score=s;best=kb;}});
+  const similar=BREAKDOWNS.filter(b=>b.part===part||best.root.some(r=>r[0]===b.root));
+  const escq=s=>String(s).replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+  document.getElementById('aiResults').innerHTML=`
+    <div class="ai-card">
+      <div class="b" style="margin-bottom:2px;font-size:15px">🤖 AI Suggestions</div>
+      <div class="t-xs" style="color:var(--muted);margin-bottom:10px">These are hints only — tap "Use" to copy into the form, then edit as needed. Nothing is saved automatically.</div>
+      <div class="t-xs b" style="color:var(--muted);margin-bottom:6px">POSSIBLE ROOT CAUSE</div>
+      ${best.root.map(r=>`<div class="ai-item"><span>${r[0]} <span class="conf" style="background:${r[1]>90?'var(--green-s)':'var(--amber-s)'};color:${r[1]>90?'var(--green)':'var(--amber)'}">${r[1]}%</span></span><button class="btn btn-ghost" style="padding:6px 12px;font-size:11px" onclick="fillField('manRoot','${escq(r[0])}')">Use</button></div>`).join('')}
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="flex jb ac" style="margin-bottom:8px"><div class="t-xs b" style="color:var(--muted)">✅ SUGGESTED CORRECTIVE ACTION</div><button class="btn btn-ghost" style="padding:6px 12px;font-size:11px" onclick="fillField('manCorr','${escq(best.corr.map((c,i)=>`${i+1}. ${c}`).join(' '))}')">Use All</button></div>
+      ${best.corr.map(c=>`<div class="t-sm" style="padding:5px 0">• ${c}</div>`).join('')}
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="flex jb ac" style="margin-bottom:8px"><div class="t-xs b" style="color:var(--muted)">🛡 SUGGESTED PREVENTIVE ACTION</div><button class="btn btn-ghost" style="padding:6px 12px;font-size:11px" onclick="fillField('manPrev','${escq(best.prev.join('; '))}')">Use</button></div>
+      ${best.prev.map(c=>`<div class="t-sm" style="padding:5px 0">• ${c}</div>`).join('')}
+    </div>
+    <div class="flex g2" style="margin-bottom:14px">
+      <div class="card grow"><div class="t-xs b" style="color:var(--muted);margin-bottom:8px">⚠️ SAFETY</div>${best.safety.map(c=>`<div class="t-xs" style="padding:3px 0">• ${c}</div>`).join('')}</div>
+      <div class="card grow"><div class="t-xs b" style="color:var(--muted);margin-bottom:8px">🔧 TOOLS</div>${best.tools.map(c=>`<div class="t-xs" style="padding:3px 0">• ${c}</div>`).join('')}</div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="flex jb ac" style="margin-bottom:8px"><div class="t-xs b" style="color:var(--muted)">📦 SPARE PARTS · ⏱ TYPICAL ${fmtDur(best.time)}</div></div>
+      <div class="flex g2 fw">${best.spares.map(s=>`<button class="pill pill-purple" style="cursor:pointer;border:none" onclick="fillField('manSpare','${escq(s)}');document.getElementById('manQty').value=1">${s}</button>`).join('')}</div>
+      <div class="t-xs" style="color:var(--muted);margin-top:8px">Tap a part to fill the Spare Part field. Enter your own Repair Time / Downtime after finishing the job.</div>
+    </div>
+    ${similar.length?`<div class="card" style="margin-bottom:14px;background:var(--blue-s)">
+      <div class="t-xs b" style="color:var(--muted);margin-bottom:8px">🧠 ${similar.length} SIMILAR PAST BREAKDOWNS</div>
+      ${similar.slice(0,2).map(s=>`<div class="t-sm" style="padding:4px 0">• ${s.machine}: ${s.corr} (${fmtDur(s.repairMin)}, ${s.tech})</div>`).join('')}
+     </div>`:''}
+    ${(()=>{const kb=queryKnowledgeBase(problem+' '+part,1);if(!kb)return'';const c0=kb.chunks[0];const cleanTxt=c0.type==='entry'?(c0.entry.solution||c0.entry.problem||''):cleanManualText(c0.text);if(!cleanTxt)return'';return `<div class="card" style="margin-bottom:14px;background:var(--red-s)">
+      <div class="t-xs b" style="color:var(--red);margin-bottom:8px">💡 ADDITIONAL INSIGHT</div>
+      <div class="t-sm" style="color:var(--ink2)">${cleanTxt.slice(0,220).trim()}${cleanTxt.length>220?'…':''}</div>
+    </div>`;})()}`;
+}
+
+/* ═══════════ VOICE ═══════════ */
+function voiceInput(id){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Voice not supported');return;}
+  const r=new SR();r.lang=LANG==='te'?'te-IN':'en-US';r.interimResults=false;
+  showToast('🎤 Listening...');
+  r.onresult=e=>{document.getElementById(id).value=e.results[0][0].transcript;};
+  r.start();
+}
+
+/* ═══════════ SUBMIT — fully manual entry, date/time pre-filled but editable ═══════════
+   No field here is auto-populated from AI on submit. The technician must
+   type (or tap "Use" on an AI hint to copy it in, then can still edit)
+   every field before saving. */
+function submitSimple(){
+  const gv=id=>(document.getElementById(id)||{}).value||'';
+  const problem=gv('bdProblem').trim();
+  const line=gv('selLine').trim();
+  const machine=gv('selMachine').trim();
+  const tech=gv('selTech').trim();
+  const corr=gv('manCorr').trim();
+  if(!line){showToast('⚠️ Enter the Line');return;}
+  if(!machine){showToast('⚠️ Enter the Machine');return;}
+  if(!problem){showToast('⚠️ Enter the Problem Description');return;}
+  if(!tech){showToast('⚠️ Enter the Technician Name');return;}
+  if(!corr){showToast('⚠️ Enter the Corrective Action Taken');return;}
+  const rec={
+    id:'BD-'+Math.floor(1000+Math.random()*9000),
+    date:gv('bdDate'), time:gv('bdTime'),
+    line, machine,
+    section:'', part:'',
+    problem,
+    root:'—', corr,
+    prev:'',
+    tech, code:'',
+    spare:'', qty:0,
+    repairMin:parseInt(gv('manRepairMin'),10)||0,
+    downtimeMin:0,
+    status:gv('manStatus')||'Open',
+    created:new Date().toISOString()
+  };
+  BREAKDOWNS.unshift(rec);
+  postToSheet({action:'addBreakdown',...rec});
+  showToast('✓ Breakdown saved · '+rec.date+' '+rec.time);
+  // clear ALL fields for next entry
+  ['selLine','selMachine','selSection','selPart','bdProblem','selTech',
+   'manRoot','manPrev','manSpare'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const corrEl=document.getElementById('manCorr'); if(corrEl) corrEl.value='';
+  const qtyEl=document.getElementById('manQty'); if(qtyEl) qtyEl.value=1;
+  ['manRepairMin','manDowntimeMin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const stEl=document.getElementById('manStatus'); if(stEl) stEl.value='Open';
+  nav('dash');
+}
+
+/* ═══════════ REPORTS ═══════════ */
+let reportPeriod='Daily';
+function selectReport(el,p){el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');reportPeriod=p;renderReport();}
+function renderReport(){
+  const k=calcKPIs();
+  const totalDt=BREAKDOWNS.reduce((a,b)=>a+b.downtimeMin,0);
+  const totalRep=BREAKDOWNS.reduce((a,b)=>a+b.repairMin,0);
+  const spares={};BREAKDOWNS.forEach(b=>{spares[b.spare]=(spares[b.spare]||0)+b.qty;});
+  document.getElementById('reportSummary').innerHTML=`
+    <div class="b" style="margin-bottom:12px">${reportPeriod} Summary</div>
+    <div class="dr-row"><span class="k">Total Breakdowns</span><span class="vv">${BREAKDOWNS.length}</span></div>
+    <div class="dr-row"><span class="k">Total Downtime</span><span class="vv">${fmtDur(totalDt)}</span></div>
+    <div class="dr-row"><span class="k">Total Repair Time</span><span class="vv">${fmtDur(totalRep)}</span></div>
+    <div class="dr-row"><span class="k">MTTR</span><span class="vv">${fmtDur(k.mttr)}</span></div>
+    <div class="dr-row"><span class="k">MTBF</span><span class="vv">${fmtDur(k.mtbf)}</span></div>
+    <div class="dr-row"><span class="k">OEE</span><span class="vv">${k.oee}%</span></div>
+    <div class="dr-row"><span class="k">Repeat Failures</span><span class="vv">${k.repeat}</span></div>
+    <div class="dr-row"><span class="k">Top Spare</span><span class="vv">${Object.entries(spares).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'}</span></div>`;
+}
+function exportData(type){
+  if(type==='excel'){
+    const headers=['ID','Date','Time','Line','Machine','Section','Part','Problem','Root Cause','Corrective','Technician','Spare','Qty','Repair(min)','Downtime(min)','Status'];
+    const rows=BREAKDOWNS.map(b=>[b.id,b.date,b.time,b.line,b.machine,b.section,b.part,b.problem,b.root,b.corr,b.tech,b.spare,b.qty,b.repairMin,b.downtimeMin,b.status]);
+    const csv=[headers,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='MVRLA_Report.csv';a.click();
+    showToast('✓ Excel (CSV) exported');
+  }else{
+    window.print();showToast('✓ Use Print → Save as PDF');
+  }
+}
+
+/* ═══════════ ADMIN PANEL ═══════════ */
+function renderAdminPanel(){
+  renderManualList();
+  renderKbEntryList();
+  renderPendingApprovals();
+  renderActiveSessions();
+  renderAdminTechList();
+}
+function renderAdminTechList(){
+  const el=document.getElementById('adminTechList'); if(!el) return;
+  el.innerHTML=TECHNICIANS.map(t=>`
+    <div class="row-card">
+      <div style="width:44px;height:44px;border-radius:13px;background:var(--purple-s);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">👤</div>
+      <div class="grow">
+        <div class="b t-sm">${t.name}</div>
+        <div class="t-xs" style="color:var(--muted)">${t.code} · ${t.dept} · ${t.desig}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── Pending Approvals / Active Device Sessions (Admin only) ────────── */
+function renderPendingApprovals(){
+  const el=document.getElementById('pendingList'); if(!el) return;
+  const list=Object.entries(LOCAL_ACCESS).filter(([,v])=>v.status==='Pending');
+  el.innerHTML=list.length?list.map(([code,v])=>`
+    <div class="row-card" style="margin-bottom:8px;padding:12px 14px">
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--amber-s);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🕒</div>
+      <div class="grow">
+        <div class="b t-sm">${v.name||('Employee '+code)}</div>
+        <div class="t-xs" style="color:var(--muted)">Code: ${code}</div>
+      </div>
+      <button class="icon-btn" style="width:34px;height:34px;color:var(--green)" onclick="approveEntry('${code}')" title="Approve">✅</button>
+      <button class="icon-btn" style="width:34px;height:34px;color:var(--red)" onclick="rejectEntry('${code}')" title="Reject">✖</button>
+    </div>`).join(''):'<div class="card tc t-sm" style="color:var(--muted)">No pending requests</div>';
+}
+function renderActiveSessions(){
+  const el=document.getElementById('sessionList'); if(!el) return;
+  const list=Object.entries(LOCAL_ACCESS).filter(([,v])=>v.status==='Approved' && v.deviceId);
+  el.innerHTML=list.length?list.map(([code,v])=>`
+    <div class="row-card" style="margin-bottom:8px;padding:12px 14px">
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--green-s);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🔐</div>
+      <div class="grow">
+        <div class="b t-sm">${v.name||('Employee '+code)}</div>
+        <div class="t-xs" style="color:var(--muted)">Code: ${code} · locked to 1 device</div>
+      </div>
+      <span class="pill pill-green" style="margin-right:6px">Active</span>
+      <button class="icon-btn" style="width:34px;height:34px" onclick="releaseSessionEntry('${code}')" title="Release device">🔓</button>
+    </div>`).join(''):'<div class="card tc t-sm" style="color:var(--muted)">No active device locks</div>';
+  renderApprovedUsers();
+}
+
+/* ── APPROVED USERS with Admin toggle (Admin can promote any user) ──────────
+   Shows every approved employee. Master admin (1001234) can toggle "Make
+   Admin" ON/OFF on any other user with one tap. Admins get:
+     · Full app access
+     · Admin Panel visibility (📄 Knowledge Base button + Admin tab)
+     · Ability to approve/reject/release other users
+     · Ability to grant/revoke admin rights themselves */
+function renderApprovedUsers(){
+  const el=document.getElementById('approvedList'); if(!el) return;
+  const list=Object.entries(LOCAL_ACCESS).filter(([,v])=>v.status==='Approved');
+  if(!list.length){ el.innerHTML='<div class="card tc t-sm" style="color:var(--muted)">No approved users yet</div>'; return; }
+  el.innerHTML=list.map(([code,v])=>{
+    const isMaster=(code===MASTER_ADMIN_CODE);
+    const isAdmin=!!v.admin;
+    return `<div class="row-card" style="margin-bottom:8px;padding:12px 14px">
+      <div style="width:40px;height:40px;border-radius:11px;background:${isAdmin?'var(--purple-s)':'var(--blue-s)'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${isAdmin?'👑':'👤'}</div>
+      <div class="grow">
+        <div class="b t-sm">${v.name||('Employee '+code)}</div>
+        <div class="t-xs" style="color:var(--muted)">Code: ${code} · ${isAdmin?'Administrator':'Technician'}</div>
+      </div>
+      ${isMaster
+        ? '<span class="pill" style="background:var(--amber-s);color:var(--amber)">Master</span>'
+        : isAdmin
+          ? '<button class="btn btn-ghost" style="padding:8px 12px;font-size:11px;color:var(--red)" onclick="setAdminRights(\''+code+'\',false)">Remove Admin</button>'
+          : '<button class="btn btn-pri" style="padding:8px 12px;font-size:11px" onclick="setAdminRights(\''+code+'\',true)">Make Admin</button>'
+      }
+    </div>`;
+  }).join('');
+}
+async function setAdminRights(code,makeAdmin){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  if(code===MASTER_ADMIN_CODE){showToast('Master admin cannot be modified','warn');return;}
+  if(code===currentUser.code && !makeAdmin){showToast('⚠️ You cannot remove your own admin rights','warn');return;}
+  LOCAL_ACCESS[code]=LOCAL_ACCESS[code]||{};
+  LOCAL_ACCESS[code].admin=!!makeAdmin;
+  LOCAL_ACCESS[code].powers={
+    canAddBreakdown:true,
+    canEditManual:!!makeAdmin,
+    canManageUsers:!!makeAdmin,
+    canViewReports:true
+  };
+  saveLocalAccess();
+  renderApprovedUsers();
+  showToast(makeAdmin?'✓ '+(LOCAL_ACCESS[code].name||code)+' is now an Admin':'Admin rights removed from '+(LOCAL_ACCESS[code].name||code));
+  await postToSheet({action:makeAdmin?'grantAdmin':'revokeAdmin',code});
+}
+async function approveEntry(code){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  LOCAL_ACCESS[code]=LOCAL_ACCESS[code]||{};
+  LOCAL_ACCESS[code].status='Approved';
+  // Grant full admin powers by default; admin can revoke individually later
+  LOCAL_ACCESS[code].powers={
+    canAddBreakdown:true,
+    canEditManual:true,
+    canManageUsers:true,
+    canViewReports:true
+  };
+  saveLocalAccess();
+  const nm=LOCAL_ACCESS[code].name||('Employee '+code);
+  if(!TECHNICIANS.some(t=>t.code==='EMP-'+String(code).slice(-4))){
+    TECHNICIANS.push({name:nm,code:'EMP-'+String(code).slice(-4),dept:'',desig:'Technician'});
+  }
+  renderPendingApprovals(); renderActiveSessions(); renderAdminTechList();
+  showToast('✓ Approved: '+nm);
+  await postToSheet({action:'approveUser',code});
+}
+async function rejectEntry(code){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  LOCAL_ACCESS[code]=LOCAL_ACCESS[code]||{};
+  LOCAL_ACCESS[code].status='Rejected';
+  saveLocalAccess();
+  renderPendingApprovals();
+  showToast('Request rejected');
+  await postToSheet({action:'rejectUser',code});
+}
+async function releaseSessionEntry(code){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  if(LOCAL_ACCESS[code]){ LOCAL_ACCESS[code].deviceId=''; saveLocalAccess(); }
+  renderActiveSessions();
+  showToast('✓ Device released — they can log in again');
+  await postToSheet({action:'releaseDevice',code});
+}
+
+/* ═══════════ THEME / LANG ═══════════ */
+function toggleTheme(){document.body.classList.toggle('dark');document.getElementById('themeBtn').innerText=document.body.classList.contains('dark')?'☀️':'🌙';}
+function toggleLang(){
+  LANG='en'; // Language permanently English — button removed from UI
+}
+
+/* ═══════════ DRAWER / TOAST ═══════════ */
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+function showToast(m){const t=document.getElementById('toast');t.innerText=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+/* ═══════════ AI CHATBOT — conversational problem solving + PDF RAG ═══════════ */
+const CHAT_QUICK_EN=['Chain slipping','Belt slipping','Vacuum weak','Motor tripping','Bearing noise','Hydraulic leak','Alarm E-204','Stacking arm not moving','Lubrication schedule','Emergency stop not working'];
+const CHAT_QUICK_TE=['చైన్ జారడం','బెల్ట్ జారడం','వాక్యూమ్ తక్కువ','మోటార్ ట్రిప్పింగ్','బేరింగ్ శబ్దం','హైడ్రాలిక్ లీక్','అలారం E-204','స్టాకింగ్ ఆర్మ్ ఆగింది','PM షెడ్యూల్','ఎమర్జెన్సీ స్టాప్'];
+
+// conversation history + FAQ cache (persisted, works offline, per-browser)
+let CHAT_HISTORY=JSON.parse(localStorage.getItem('mv_chat_history')||'[]');
+let CHAT_CACHE=JSON.parse(localStorage.getItem('mv_chat_cache')||'{}');
+function saveChatHistory(){ try{ if(CHAT_HISTORY.length>200) CHAT_HISTORY=CHAT_HISTORY.slice(-200); localStorage.setItem('mv_chat_history',JSON.stringify(CHAT_HISTORY)); }catch(e){} }
+function saveChatCache(){ try{ localStorage.setItem('mv_chat_cache',JSON.stringify(CHAT_CACHE)); }catch(e){} }
+function cacheKey(text){ return (LANG||'en')+'::'+String(text).trim().toLowerCase(); }
+
+function openChat(){
+  document.getElementById('chatScreen').classList.add('open');
+  CHAT_STATE={awaiting:false,originalText:'',round:0};
+  const body=document.getElementById('chatBody');
+  const q=document.getElementById('chatQuick');
+  const quickList=LANG==='te'?CHAT_QUICK_TE:CHAT_QUICK_EN;
+  q.innerHTML=quickList.map(t=>`<button onclick="askChat('${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
+  if(!body.dataset.started){
+    body.dataset.started='1';
+    if(CHAT_HISTORY.length){
+      CHAT_HISTORY.forEach(m=>addChatMsg(m.who,m.html,false));   // restore prior conversation, don't re-persist
+    }else{
+      const greet=LANG==='te'
+        ? `👋 హాయ్ ${currentUser?currentUser.name.split(' ')[0]:''}! నేను మీ మెయింటెనెన్స్ AI అసిస్టెంట్‌ని. అప్‌లోడ్ చేసిన మాన్యువల్స్ ఆధారంగా మీ ప్రశ్నకు సమాధానం ఇస్తాను — ఏదైనా అడగండి.`
+        : `👋 Hi ${currentUser?currentUser.name.split(' ')[0]:''}! I'm your maintenance AI assistant. Ask me anything about your machines — I'll answer using the uploaded manuals, step by step.`;
+      addChatMsg('bot',greet);
+    }
+  }
+  const inp=document.getElementById('chatInput');
+  inp.placeholder=LANG==='te'?'మీ మెషిన్ సమస్యను టైప్ చేయండి...':'Describe your machine problem...';
+  setTimeout(()=>inp.focus(),300);
+}
+function closeChat(){document.getElementById('chatScreen').classList.remove('open');}
+function addChatMsg(who,html,persist){
+  const body=document.getElementById('chatBody');
+  const d=document.createElement('div');
+  d.className='msg '+who;
+  d.innerHTML=html;
+  body.appendChild(d);
+  body.scrollTop=body.scrollHeight;
+  if(persist!==false){ CHAT_HISTORY.push({who,html,ts:Date.now()}); saveChatHistory(); }
+  return d;
+}
+function askChat(text){document.getElementById('chatInput').value=text;sendChat();}
+
+/* ═══════════ CONVERSATIONAL CLARIFICATION STATE ═══════════
+   When the AI isn't confident, instead of guessing it asks the user a
+   short question with tappable "mark type" answer options. The user's
+   tap (or typed reply) is merged with the original question and the
+   search runs again with the extra detail. Max 2 clarification rounds
+   to avoid looping forever. */
+let CHAT_STATE={awaiting:false,originalText:'',round:0};
+
+function addChatOptions(options){
+  const body=document.getElementById('chatBody');
+  const wrap=document.createElement('div');
+  wrap.className='chat-quick';
+  wrap.style.cssText='padding:0 0 6px;align-self:flex-start;max-width:100%;flex-wrap:wrap;overflow-x:visible';
+  wrap.innerHTML=options.map(o=>`<button onclick="answerClarify('${String(o).replace(/'/g,"&#39;")}')">${o}</button>`).join('');
+  body.appendChild(wrap);
+  body.scrollTop=body.scrollHeight;
+}
+function answerClarify(optionText){
+  document.getElementById('chatInput').value=optionText;
+  sendChat();
+}
+
+function sendChat(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  addChatMsg('user',text);
+  input.value='';
+  const body=document.getElementById('chatBody');
+
+  // If we previously asked a clarifying question, merge the answer with
+  // the original query instead of treating it as a brand-new question.
+  let queryText=text;
+  let isClarificationAnswer=false;
+  if(CHAT_STATE.awaiting){
+    queryText=(CHAT_STATE.originalText+' '+text).trim();
+    isClarificationAnswer=true;
+    CHAT_STATE.awaiting=false;
+  }
+
+  const key=cacheKey(queryText);
+  const cached=!isClarificationAnswer?CHAT_CACHE[key]:null;
+  const typing=addChatMsg('bot','<div class="typing-dots"><span></span><span></span><span></span></div>',false);
+  setTimeout(()=>{
+    typing.remove();
+    if(cached){
+      cached.hits=(cached.hits||0)+1; saveChatCache();
+      addChatMsg('bot',cached.html);
+      body.scrollTop=body.scrollHeight;
+      return;
+    }
+    const result=generateBotReply(queryText,isClarificationAnswer);
+    if(result.needsClarification){
+      CHAT_STATE.awaiting=true;
+      CHAT_STATE.originalText=queryText;
+      CHAT_STATE.round+=1;
+      addChatMsg('bot',result.html);
+      if(result.options&&result.options.length) addChatOptions(result.options);
+    }else{
+      CHAT_STATE={awaiting:false,originalText:'',round:0};
+      addChatMsg('bot',result.html);
+      CHAT_CACHE[key]={html:result.html,hits:1,ts:Date.now()};
+      saveChatCache();
+    }
+    body.scrollTop=body.scrollHeight;
+  },cached?250:700+Math.random()*500);
+}
+
+const MAX_CLARIFY_ROUNDS=2;
+
+/* Main reply generator — implements RAG rules with clarifying questions:
+   1) Search uploaded manuals + Google Sheet knowledge base FIRST.
+   2) If confident match found → structured, professional step-by-step answer.
+   3) If AMBIGUOUS (several equally-likely but different machines/problems
+      match, or too little detail was given) → ask ONE short clarifying
+      question with tap-to-answer options (like a multiple-choice), then
+      re-run the search once the user replies.
+   4) If manuals/sheet have nothing → fall back to built-in troubleshooting
+      tips (existing feature).
+   5) If truly nothing matches after clarification → polite fallback (EN/TE).
+   Returns {needsClarification, html, options} */
+function generateBotReply(text,isClarificationAnswer){
+  const reachedRoundLimit=CHAT_STATE.round>=MAX_CLARIFY_ROUNDS;
+
+  // If the user typed a PDF/file name instead of a problem, respond like a
+  // real assistant: confirm the manual is loaded and ask what the actual
+  // machine problem is — never dump the manual's cover page as an answer.
+  if(/\.(pdf|docx?|xlsx?)\s*$/i.test(text.trim()) || /^(instruction|operating)\s+manual/i.test(text.trim())){
+    const manualLoaded=MANUALS.some(m=>m.name.toLowerCase().includes(text.trim().toLowerCase().replace(/\.(pdf|docx?|xlsx?)$/i,'').trim().slice(0,10)));
+    const q=LANG==='te'
+      ? (manualLoaded?'✅ ఆ మాన్యువల్ నా దగ్గర ఉంది! మెషిన్‌లో ఏ సమస్య వస్తోందో చెప్పండి — నేను సరైన పరిష్కారం వెతికి ఇస్తాను.':'ఆ మాన్యువల్ గురించి తెలుసు. మెషిన్‌లో ఏ సమస్య వస్తోంది?')
+      : (manualLoaded?"✅ I have that manual loaded! Now tell me what problem you're facing with the machine, and I'll find the exact fix for you.":"I know that manual. What problem is the machine having?");
+    return {needsClarification:true,html:q,options:['Machine not starting','Abnormal noise','Part jammed / stuck','Quality problem']};
+  }
+
+  // 1) PDF / Google-Sheet Knowledge Base (RAG) — primary source of truth
+  const kbResult=queryKnowledgeBase(text,6);
+  if(kbResult){
+    // Ambiguity check: do the top results point at clearly different
+    // machines/problems with similar confidence? If so, ask which one.
+    if(!reachedRoundLimit){
+      const groups={};
+      kbResult.chunks.forEach(c=>{
+        const label=c.type==='entry'?(c.entry.machine||c.entry.category||'General'):c.manual;
+        if(!groups[label]) groups[label]=c.score;
+        else groups[label]=Math.max(groups[label],c.score);
+      });
+      const groupEntries=Object.entries(groups).sort((a,b)=>b[1]-a[1]);
+      const top=groupEntries[0], second=groupEntries[1];
+      if(second && top[1]>0 && (second[1]/top[1])>0.75 && top[0]!==second[0]){
+        const options=groupEntries.slice(0,4).map(g=>g[0]);
+        const q=LANG==='te'
+          ? 'ఇది ఏ మెషిన్/లైన్‌లో జరుగుతోంది? సరైన సమాధానం ఇస్తే ఖచ్చితమైన పరిష్కారం ఇస్తాను:'
+          : "To give you the most accurate fix, which machine or area is this on?";
+        return {needsClarification:true,html:q,options};
+      }
+    }
+    let html=formatRagAnswer(text,kbResult);
+    html+=`<div style="margin-top:10px"><button class="btn btn-pri" style="padding:10px 16px;font-size:13px" onclick="closeChat();startNew()">📝 ${LANG==='te'?'ఈ బ్రేక్‌డౌన్ నమోదు చేయండి':'Log this breakdown'}</button></div>`;
+    return {needsClarification:false,html};
+  }
+
+  // 2) Built-in troubleshooting knowledge base (existing feature, kept intact)
+  const low=text.toLowerCase();
+  let best=null,score=0,secondBest=null,secondScore=0;
+  AI_KB.forEach(kb=>{
+    const s=kb.kw.filter(k=>low.includes(k)).length;
+    if(s>score){secondBest=best;secondScore=score;best=kb;score=s;}
+    else if(s>secondScore && s>0){secondBest=kb;secondScore=s;}
+  });
+
+  // Ambiguous match (two different topics score equally) → ask which one
+  if(best && secondBest && score===secondScore && score>0 && !reachedRoundLimit){
+    const opt1=best.kw[0], opt2=secondBest.kw[0];
+    const q=LANG==='te'
+      ? `మీరు దీని గురించి చెబుతున్నారా: "${opt1}" లేదా "${opt2}"?`
+      : `Just to be sure — are you talking about "${opt1}" or "${opt2}"?`;
+    return {needsClarification:true,html:q,options:[opt1,opt2]};
+  }
+
+  // No match at all yet → ask a helpful clarifying question instead of
+  // giving up immediately (unless we've already asked once).
+  if(!best && !reachedRoundLimit){
+    const q=LANG==='te'
+      ? 'నాకు ఖచ్చితంగా అర్థం కాలేదు. ఇది దేనికి సంబంధించినది?'
+      : "I want to get this right — which of these is closest to your issue?";
+    return {needsClarification:true,html:q,options:['Chain / Belt','Motor / Electrical','Bearing / Vibration','Hydraulic / Vacuum']};
+  }
+
+  if(best){
+    let html=`${LANG==='te'?'ఇక్కడ దీన్ని ఎలా పరిష్కరించాలో ఉంది:':"Here's how to fix it:"}<br><br>`;
+    html+=`🔍 <b>${LANG==='te'?'కారణం':'Likely cause'}</b><br>${best.root.map(r=>`• ${r[0]} <span style="color:var(--primary-dd);font-weight:800">(${r[1]}% confidence)</span>`).join('<br>')}<br><br>`;
+    html+=`✅ <b>${LANG==='te'?'ఏం చేయాలి':'What to do'}</b><br>${best.corr.map((c,i)=>`${i+1}. ${c}`).join('<br>')}<br><br>`;
+    html+=`🛡 <b>${LANG==='te'?'భవిష్యత్తులో నివారించడానికి':'To prevent it next time'}</b><br>${best.prev.map(p=>`• ${p}`).join('<br>')}<br><br>`;
+    html+=`⚠️ <b>${LANG==='te'?'భద్రతా జాగ్రత్తలు':'Safety first'}</b><br>${best.safety.map(s=>`• ${s}`).join('<br>')}<br><br>`;
+    html+=`🔧 ${LANG==='te'?'పరికరాలు':'Tools'}: ${best.tools.join(', ')}<br>📦 ${LANG==='te'?'స్పేర్ పార్ట్స్':'Spares'}: ${best.spares.join(', ')}<br>⏱ ${LANG==='te'?'అంచనా సమయం':'Est. time'}: <b>${fmtDur(best.time)}</b>`;
+
+    const similar=BREAKDOWNS.filter(b=>best.root.some(r=>r[0]===b.root));
+    if(similar.length){
+      html+=`<br><br>🧠 <b>${LANG==='te'?'ఇలాంటివి ఇంతకుముందు కూడా జరిగాయి':"We've seen this before"}</b><br>`;
+      html+=similar.slice(0,2).map(s=>`• ${s.machine} on ${s.date}: fixed by <i>${s.corr}</i> (${s.tech}, ${fmtDur(s.repairMin)})`).join('<br>');
+    }
+    html+=`<br><br>${LANG==='te'?'ఈ బ్రేక్‌డౌన్‌ను నమోదు చేయాలా?':'Would you like me to open the <b>New Breakdown</b> form so a technician can log this?'}`;
+    html+=`<div style="margin-top:10px"><button class="btn btn-pri" style="padding:10px 16px;font-size:13px" onclick="closeChat();startNew()">📝 ${LANG==='te'?'నమోదు చేయండి':'Log this breakdown'}</button></div>`;
+    return {needsClarification:false,html};
+  }
+
+  // 3) Nothing found anywhere, even after clarification — polite fallback
+  CHAT_STATE={awaiting:false,originalText:'',round:0};
+  return {needsClarification:false,html:KB_UNAVAILABLE[LANG==='te'?'te':'en']};
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   KNOWLEDGE BASE — PDF MANUALS + LOCAL VECTOR INDEX + RAG (ADMIN UPLOAD,
+   ALL USERS QUERY VIA CHATBOT). Admin-only upload/replace/delete/re-index.
+   Everything below is ADDITIVE — no existing UI/markup/behaviour removed.
+═══════════════════════════════════════════════════════════════════ */
+if(window['pdfjsLib']) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// manual = {id, name, uploaded, pages:[{page,text}], chunks:[{page,text,vec,mag}]}
+let MANUALS = JSON.parse(localStorage.getItem('mv_manuals')||'[]');
+function saveManuals(){localStorage.setItem('mv_manuals',JSON.stringify(MANUALS));}
+
+/* ── PLAIN GOOGLE-SHEET KNOWLEDGE BASE ("ManualKB" tab) ───────────────
+   entry = {id, machine, category, problem, cause, solution, steps,
+            safety, tools, spares, updated, vec, mag}
+   Admins can type rows directly into the ManualKB sheet (Problem, Cause,
+   Solution, Steps, Safety, Tools, Spares columns) — the AI reads it the
+   same way it reads uploaded PDFs, and answers are exact (not guessed by
+   regex) since the fields are already structured. */
+let KB_ENTRIES = JSON.parse(localStorage.getItem('mv_kb_entries')||'[]');
+
+/* TROUBLESHOOTING SHEET ENTRIES — Excel-style rows the admin pastes into
+   the "Troubleshooting" tab (Machine | Problem | Cause | Remedy). Loaded
+   fresh on every sync; the sheet is the single source of truth. Demo rows
+   below keep the chatbot working before the sheet is connected. */
+let TS_ENTRIES = JSON.parse(localStorage.getItem('mv_ts_entries')||'[]');
+function saveTsEntries(){try{localStorage.setItem('mv_ts_entries',JSON.stringify(TS_ENTRIES));}catch(e){}}
+(function seedTsEntries(){
+  if(TS_ENTRIES.length) return;
+  TS_ENTRIES=[
+    {id:'TS-1',machine:'COS5',category:'Troubleshooting',problem:'Strap not forming properly',cause:'Mould temperature too low or lead level low',solution:'Check mould temperature and lead level',steps:'1. Check mould temperature setting (target 450-480 C)\n2. Check lead pot level and top up if low\n3. Inspect mould cavity for dross buildup\n4. Clean cavity with brass scraper\n5. Run 3 test cycles and inspect strap quality',safety:'Molten lead — full PPE required',tools:'',spares:''},
+    {id:'TS-2',machine:'COS5',category:'Troubleshooting',problem:'Vacuum not activated',cause:'Suction cups worn or vacuum line blocked',solution:'Check suction cups and vacuum line',steps:'1. Check all suction cups are seated on the vacuum band\n2. Verify every suction cup touches the plate surface\n3. Replace any cracked or hardened cups\n4. Check vacuum line for kinks or blockage\n5. Test vacuum gauge reading against spec',safety:'Isolate machine before touching cups',tools:'',spares:'Suction Cup Set'},
+    {id:'TS-3',machine:'COS5',category:'Troubleshooting',problem:'Plates dropping during transfer',cause:'Gripper pressure low or alignment out',solution:'Check gripper pressure and alignment',steps:'1. Check gripper air pressure (min 5 bar)\n2. Inspect gripper pads for wear\n3. Verify plate alignment guides are square\n4. Adjust gripper closing timing\n5. Test with a full plate stack',safety:'Keep hands clear of gripper',tools:'',spares:'Gripper Pads'},
+    {id:'TS-4',machine:'BM Stacking',category:'Troubleshooting',problem:'Separator feed jam',cause:'Separator stack skewed or feeder belt worn',solution:'Clear jam and restack separators',steps:'1. Stop machine and remove jammed separators\n2. Restack separators squarely in magazine\n3. Check feeder belt surface for wear\n4. Adjust separator guide width\n5. Resume and watch first 10 cycles',safety:'LOTO before clearing jam',tools:'',spares:''}
+  ];
+  saveTsEntries();
+})();
+// Seed 20 demo troubleshooting entries on first load (same data as Code.gs setupSheet)
+(function seedKbEntries(){
+  if(KB_ENTRIES.length) return;
+  const d=[
+    {id:'KB-1001',machine:'BM Stacking',category:'Mechanical',problem:'Feeder belt slipping',cause:'Belt tension low or surface worn',solution:'Re-tension belt, replace if glazed',steps:'1. Stop and LOTO machine\n2. Loosen motor mounting bolts\n3. Adjust tensioner (10-15mm deflection)\n4. Tighten bolts\n5. Test run',safety:'LOTO before touching belt',tools:'Tension gauge, spanner set',spares:'Feeder Belt FB-450'},
+    {id:'KB-1002',machine:'Formation',category:'Vacuum',problem:'Separator vacuum weak suction',cause:'Vacuum pump seal worn or hose leak',solution:'Check hoses for leaks, replace pump seal',steps:'1. Isolate vacuum line\n2. Check clamps with soapy water\n3. Remove pump cover\n4. Replace cracked seal\n5. Reassemble and test',safety:'Depressurize before opening. Safety glasses.',tools:'Seal removal tool, spray bottle',spares:'Vacuum Pump Seal Kit'},
+    {id:'KB-1003',machine:'Charging',category:'Electrical',problem:'Alarm E-204 battery transfer arm',cause:'Encoder misalignment on transfer axis',solution:'Realign encoder and recalibrate',steps:'1. Put in manual jog mode\n2. Move arm to home stop\n3. Loosen encoder coupling\n4. Align marker to reference\n5. Tighten and auto-calibrate\n6. Clear E-204',safety:'Keep clear of arm path',tools:'Allen key set, encoder tool',spares:'Encoder Coupling'},
+    {id:'KB-1004',machine:'BM Stacking',category:'Mechanical',problem:'Chain slipping on feeder',cause:'Chain tension loose or sprocket worn',solution:'Adjust chain tension, inspect sprocket teeth',steps:'1. Stop machine and LOTO\n2. Remove chain guard\n3. Check sprocket teeth for wear\n4. Adjust chain tensioner bolt\n5. Verify 10mm slack\n6. Replace guard and test',safety:'Wear gloves, LOTO strictly',tools:'Chain tensioner, spanner 19mm',spares:'Chain 10B, Sprocket 18T'},
+    {id:'KB-1005',machine:'BM Stacking',category:'Mechanical',problem:'Chain broken on feeder',cause:'Fatigue failure or overload',solution:'Replace chain and check sprocket alignment',steps:'1. LOTO machine\n2. Remove broken chain\n3. Check sprocket alignment\n4. Install new chain with master link\n5. Tension to spec\n6. Test slowly',safety:'Lock out before chain work',tools:'Chain breaker, master link tool',spares:'Chain 10B, Master Link'},
+    {id:'KB-1006',machine:'Pasting',category:'Mechanical',problem:'Paste roller bearing noise',cause:'Bearing lubrication dried or bearing worn',solution:'Replace bearing or re-grease',steps:'1. Stop and LOTO\n2. Remove roller cover\n3. Check bearing play\n4. If worn replace 6206-2RS\n5. If dry re-grease with EP2 (3-5 pumps)\n6. Reassemble',safety:'Allow bearing to cool first',tools:'Bearing puller, grease gun',spares:'Bearing 6206-2RS, EP2 Grease'},
+    {id:'KB-1007',machine:'Pasting',category:'Electrical',problem:'Paste motor tripping',cause:'Overload or winding fault',solution:'Check current draw, megger test insulation',steps:'1. Reset overload relay\n2. Clamp meter on all 3 phases\n3. If imbalance >2% suspect winding\n4. Megger test at 500V (must be >1MΩ)\n5. Check cooling fan\n6. Replace contactor if burned',safety:'LOTO and verify zero voltage',tools:'Clamp meter, megger',spares:'Contactor 25A, Overload Relay'},
+    {id:'KB-1008',machine:'Formation',category:'Electrical',problem:'Oven heater not heating zone 2',cause:'Heater element open circuit',solution:'Replace heater element',steps:'1. Measure terminal voltage (should be 230V)\n2. Measure heater resistance (should be ~26Ω)\n3. If open circuit replace 2kW element\n4. Check thermocouple polarity\n5. Verify PID settings SP=75 P=12 I=180 D=30',safety:'LOTO before heater work',tools:'Multimeter, insulated screwdriver',spares:'Heater Element 2kW'},
+    {id:'KB-1009',machine:'Formation',category:'Sensor',problem:'Acid level sensor false reading',cause:'Float stuck due to acid crystallization',solution:'Clean float sensor, replace if damaged',steps:'1. Isolate acid line\n2. Remove sensor from tank\n3. Soak in hot DM water 15 min\n4. Clean crystal buildup\n5. Check float movement\n6. Reinstall and test',safety:'PVC gloves + splash goggles MANDATORY',tools:'Cleaning brush, DM water',spares:'Float Switch PP'},
+    {id:'KB-1010',machine:'Assembly',category:'Hydraulic',problem:'Hydraulic press leaking oil',cause:'Cylinder seal worn',solution:'Replace seal kit and top up oil',steps:'1. Relieve system pressure to ZERO\n2. Clean area around leak\n3. Remove cylinder end cap\n4. Replace O-rings and seals\n5. Top up with ISO VG46\n6. Pressurize and check',safety:'Relieve pressure first. Wear goggles.',tools:'Seal kit tool, torque wrench',spares:'Seal Kit, ISO VG46 Oil'},
+    {id:'KB-1011',machine:'Assembly',category:'Mechanical',problem:'Conveyor chain tension loose',cause:'Normal wear or sprocket misalignment',solution:'Adjust tensioner and check alignment',steps:'1. Stop conveyor\n2. Check chain sag (max 15mm)\n3. Adjust take-up bolt\n4. Check sprocket alignment with straight edge\n5. Lubricate chain\n6. Test run',safety:'LOTO before adjustment',tools:'Straight edge, grease gun',spares:'Chain Lubricant'},
+    {id:'KB-1012',machine:'Charging',category:'Electrical',problem:'Rectifier DC fuse blown',cause:'Short circuit in terminal block',solution:'Find and fix short, replace fuse',steps:'1. LOTO rectifier panel\n2. Inspect terminal blocks for burns\n3. Megger test DC bus\n4. Fix loose or shorted terminal\n5. Replace fuse with correct rating\n6. Energize and monitor',safety:'High voltage - qualified electrician only',tools:'Megger, insulated tools',spares:'DC Fuse 400A'},
+    {id:'KB-1013',machine:'BM Stacking',category:'Pneumatic',problem:'Stacking arm not moving',cause:'Cylinder pressure below 4 bar',solution:'Check air supply and FRL unit',steps:'1. Check main compressor running\n2. Check FRL pressure gauge (min 5 bar)\n3. Drain FRL water trap\n4. Check solenoid valve 24V coil\n5. Check cylinder for internal leak\n6. Replace seal if drift detected',safety:'LOTO before cylinder work',tools:'Pressure gauge, spanner',spares:'FRL Unit, Cylinder Seal Kit'},
+    {id:'KB-1014',machine:'BM Stacking',category:'Sensor',problem:'Stacking position sensor not detecting',cause:'Sensor misaligned or cable damaged',solution:'Realign sensor and check wiring',steps:'1. Check sensor LED indicator\n2. Adjust sensor gap (2-3mm from target)\n3. Check cable for damage\n4. Measure output voltage with multimeter\n5. Replace if no output\n6. Test stacking cycle',safety:'ESD precautions for sensor work',tools:'Multimeter, allen key',spares:'Proximity Sensor PNP 5mm'},
+    {id:'KB-1015',machine:'Pasting',category:'Mechanical',problem:'Paste hopper agitator stopped',cause:'Motor coupling broken or gearbox seized',solution:'Check coupling and gearbox',steps:'1. LOTO machine\n2. Remove coupling guard\n3. Inspect coupling for cracks\n4. Check gearbox oil level\n5. Replace coupling if broken\n6. Top up gearbox oil if low',safety:'LOTO, keep hands away from coupling',tools:'Coupling puller, oil can',spares:'Agitator Coupling, Gearbox Oil'},
+    {id:'KB-1016',machine:'General',category:'Lubrication',problem:'Lubrication schedule overdue',cause:'Missed PM schedule',solution:'Perform full lubrication service',steps:'1. Check lubrication chart\n2. Grease all nipple points\n3. Top up oil reservoirs\n4. Check oil levels in gearboxes\n5. Replace oil if contaminated\n6. Update PM logbook',safety:'Use correct grease grade only',tools:'Grease gun, oil can',spares:'EP2 Grease 400g, ISO 46 Oil'},
+    {id:'KB-1017',machine:'General',category:'Safety',problem:'Emergency stop not working',cause:'E-stop switch contact worn',solution:'Replace E-stop switch immediately',steps:'1. Do NOT run machine\n2. Isolate main power\n3. Remove E-stop button assembly\n4. Check contacts with multimeter\n5. Replace complete unit\n6. Test with safety officer present',safety:'CRITICAL: Machine must not run without working E-stop',tools:'Multimeter, screwdriver',spares:'Emergency Stop Switch'},
+    {id:'KB-1018',machine:'BM Stacking',category:'Mechanical',problem:'Grid plates sticking in mold',cause:'Mold surface buildup or release agent empty',solution:'Clean mold and refill release agent',steps:'1. Stop production\n2. Remove stuck plate carefully\n3. Clean mold surface with brass brush\n4. Apply fresh release agent\n5. Check nozzle spray pattern\n6. Resume and monitor first 10 cycles',safety:'Wear heat resistant gloves',tools:'Brass brush, release agent spray',spares:'Mold Release Agent'},
+    {id:'KB-1019',machine:'Formation',category:'Electrical',problem:'DM water pump motor tripping',cause:'High current due to impeller blockage',solution:'Clear impeller and check motor current',steps:'1. LOTO pump\n2. Open pump casing\n3. Clear debris from impeller\n4. Check impeller clearance (0.3-0.5mm)\n5. Reassemble\n6. Check running current vs nameplate',safety:'Acid traces possible - wear PPE',tools:'Pump tools, clamp meter',spares:'Mechanical Seal, Impeller'},
+    {id:'KB-1020',machine:'General',category:'Preventive',problem:'Preventive maintenance schedule',cause:'Regular PM intervals',solution:'Follow PM checklist for each machine',steps:'Weekly: Belt tension, chain lubrication, air filter\nMonthly: Bearing grease, oil levels, sensor alignment\nQuarterly: Full vibration check, motor current, hydraulic oil\nAnnually: Full overhaul, megger test, alignment',safety:'Follow LOTO for every PM task',tools:'PM toolkit, checklist form',spares:'As per PM checklist'},
+  ];
+  d.forEach(e=>{e.synced=true;e.updated=new Date().toISOString();});
+  KB_ENTRIES=d;
+  saveKbEntries();
+})();
+function saveKbEntries(){localStorage.setItem('mv_kb_entries',JSON.stringify(KB_ENTRIES));}
+function buildEntryIndex(entry){
+  const text=[entry.problem,entry.cause,entry.solution,entry.steps,entry.machine,entry.category].filter(Boolean).join(' ');
+  const {vec,mag}=buildTermVector(text);
+  entry.vec=vec; entry.mag=mag;
+}
+function rebuildEntryIndexes(){ KB_ENTRIES.forEach(buildEntryIndex); saveKbEntries(); }
+
+// ── Stopwords / synonyms / fuzzy matching (typo tolerance) ──────────
+const KB_STOPWORDS=new Set(['the','a','an','is','are','was','were','to','of','in','on','for','and','or','it','this','that','be','how','do','does','what','with','at','by','as','from','can','i','you','your','my']);
+const KB_SYNONYMS={
+  belt:['band','v-belt'], feeder:['loader','feed'], vacuum:['suction'], alarm:['error','fault','code'],
+  torque:['tightening','tighten'], lubrication:['grease','oil','lube'], encoder:['position sensor'],
+  conveyor:['transport','transporter'], battery:['cell'], separator:['divider'],
+  replace:['change','swap','install'], adjust:['tune','calibrate'], leak:['leaking','leakage'],
+  bearing:['bush','bushing'], sensor:['detector'], chain:['sprocket chain'], motor:['drive motor']
+};
+function kbTokenize(text){
+  return String(text||'').toLowerCase().replace(/[^a-z0-9\u0C00-\u0C7F\s]/g,' ').split(/\s+/).filter(t=>t && t.length>1 && !KB_STOPWORDS.has(t));
+}
+function levenshtein(a,b){
+  if(a===b) return 0;
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++){
+      cur[j]=a[i-1]===b[j-1]?prev[j-1]:1+Math.min(prev[j],cur[j-1],prev[j-1]);
+    }
+    prev=cur;
+  }
+  return prev[n];
+}
+function expandQueryTokens(tokens,vocab){
+  const out=new Set();
+  tokens.forEach(t=>{
+    out.add(t);
+    if(KB_SYNONYMS[t]) KB_SYNONYMS[t].forEach(s=>out.add(s));
+    // typo tolerance: find closest vocab word within edit-distance 2
+    if(vocab && vocab.size && !vocab.has(t) && t.length>=4){
+      let bestW=null,bestD=3;
+      vocab.forEach(v=>{ if(Math.abs(v.length-t.length)<=2){ const d=levenshtein(t,v); if(d<bestD){bestD=d;bestW=v;} } });
+      if(bestW) out.add(bestW);
+    }
+  });
+  return [...out];
+}
+
+// ── Lightweight local "embedding": term-frequency vector per chunk ──
+// (No external AI/embedding API is configured in this static app, so we
+//  use TF vectors + cosine similarity as a fast local vector index. If a
+//  real embeddings API is added later, swap buildTermVector() below with
+//  an API call and keep the same chunk.vec / cosineSim() plumbing.)
+function buildTermVector(text){
+  const vec={}; kbTokenize(text).forEach(t=>{vec[t]=(vec[t]||0)+1;});
+  let mag=0; for(const k in vec) mag+=vec[k]*vec[k];
+  return {vec,mag:Math.sqrt(mag)||1};
+}
+function cosineSim(qVec,qMag,cVec,cMag){
+  let dot=0;
+  for(const k in qVec){ if(cVec[k]) dot+=qVec[k]*cVec[k]; }
+  return dot/((qMag||1)*(cMag||1));
+}
+/* Strip PDF page-noise: dates, "Troubleshooting 22 / 37" style footers,
+   lone page numbers, and other junk that isn't part of the actual
+   instructions — so answers only contain real problem-solving content. */
+function cleanManualText(text){
+  let t=String(text||'');
+  t=t.replace(/\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b/g,' ');           // dates: 12/12/2012
+  t=t.replace(/\bTroubleshooting\s*\d{1,4}\s*\/\s*\d{1,4}\b/gi,' ');       // "Troubleshooting 22 / 37"
+  t=t.replace(/\b(?:Page|Pg\.?|Section|Chapter|Rev\.?|Revision)\s*\d{1,4}\s*(?:\/|of)\s*\d{1,4}\b/gi,' '); // "Page 22 / 37"
+  t=t.replace(/\b\d{1,4}\s*\/\s*\d{1,4}\b/g,' ');                          // any lone "22 / 37"
+  t=t.replace(/\s{2,}/g,' ').trim();
+  t=stripHeaderNoise(t);
+  return t;
+}
+/* Manuals often start a passage with a short section title before the
+   real instruction, e.g. "Clamp conveyor / Vacuum suction band Check if
+   all suction cups...". Drop that leading title fragment so only the
+   actual instruction text remains. */
+function stripHeaderNoise(t){
+  const m=t.match(/^[^.!?]{0,90}\/[^.!?]{0,90}?\s+(?=[A-Z][a-z])/);
+  if(m && m[0].length<t.length) return t.slice(m[0].length).trim();
+  return t;
+}
+/* Reject leftover heading-like fragments (Title Case / Title Case, no
+   normal sentence words) so they never appear as a "step". */
+function looksLikeHeading(s){
+  const clean=s.trim();
+  if(clean.length<15) return true;
+  if(/^[A-Z][\w\s]*\/[A-Z][\w\s]*$/.test(clean) && !/\b(the|is|are|check|ensure|verify|if|and|to|on|of)\b/i.test(clean)) return true;
+  return false;
+}
+function splitIntoChunks(text,size){
+  const clean=cleanManualText(String(text||'').replace(/\s+/g,' ')).trim();
+  if(!clean) return [];
+  const sentences=clean.split(/(?<=[.!?])\s+/);
+  const chunks=[]; let cur='';
+  sentences.forEach(s=>{
+    if((cur+' '+s).length>size && cur){ chunks.push(cur.trim()); cur=s; }
+    else cur=cur?cur+' '+s:s;
+  });
+  if(cur) chunks.push(cur.trim());
+  return chunks.length?chunks:[clean];
+}
+
+/* ── Build / rebuild the vector index for one manual, or all manuals ── */
+/* Junk-chunk detector — cover pages, addresses, contact blocks, tables of
+   contents and title pages must NEVER be shown as "repair steps". */
+function isJunkChunk(t){
+  const s=String(t||'').trim();
+  if(s.length<40) return true;                                     // too short to be a real instruction
+  if(/(tel\.?|phone|fax)\s*[.:]?\s*\+?\d/i.test(s)) return true;   // phone/fax numbers
+  if(/e-?mail\s*[.:]|@[a-z0-9.\-]+\.(com|co|org|net|uk|in)/i.test(s)) return true; // email addresses
+  if(/\b(industrial estate|p\.?o\.? box|road|street|avenue)\b/i.test(s) && /\b[A-Z]{1,2}\d{1,2}\s?\d?[A-Z]{2}\b/.test(s)) return true; // postal address + postcode
+  if(/\b(instruction manual|operating instruction|issue \d+|revision \d+|table of contents|contents page|copyright|all rights reserved)\b/i.test(s) && s.length<400) return true; // title/TOC pages
+  const letters=s.replace(/[^a-zA-Z]/g,'');
+  if(letters.length>30){
+    const upper=letters.replace(/[^A-Z]/g,'').length;
+    if(upper/letters.length>0.7) return true;                      // mostly-UPPERCASE = heading/cover text
+  }
+  // real instructions contain action verbs — require at least one
+  if(!/\b(check|ensure|verify|remove|replace|adjust|clean|install|inspect|loosen|tighten|press|turn|switch|open|close|set|measure|apply|connect|disconnect|start|stop|lubricat|grease|align|test|repair|fit|mount)\w*\b/i.test(s)) return true;
+  return false;
+}
+function buildManualIndex(manual){
+  manual.chunks=[];
+  (manual.pages||[]).forEach(p=>{
+    splitIntoChunks(p.text,700).forEach(ch=>{
+      if(isJunkChunk(ch)) return;   // ← skip cover pages / addresses / TOC
+      const {vec,mag}=buildTermVector(ch);
+      manual.chunks.push({page:p.page,text:ch,vec,mag});
+    });
+  });
+}
+function rebuildAllIndexes(showMsg){
+  MANUALS.forEach(m=>{
+    if(!m.id) m.id='MAN-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    buildManualIndex(m);
+  });
+  saveManuals();
+  rebuildEntryIndexes();   // also (re)index the Google Sheet "ManualKB" entries
+  renderManualList();
+  renderKbEntryList();
+  const chunkCount=MANUALS.reduce((a,m)=>a+(m.chunks?m.chunks.length:0),0);
+  if(showMsg) showToast(`✓ Knowledge Base re-indexed · ${MANUALS.length} manual(s), ${chunkCount} chunks, ${KB_ENTRIES.length} sheet entries`);
+}
+function kbVocabulary(){
+  const v=new Set();
+  MANUALS.forEach(m=>(m.chunks||[]).forEach(c=>{ for(const k in c.vec) v.add(k); }));
+  KB_ENTRIES.forEach(en=>{ if(en.vec) for(const k in en.vec) v.add(k); });
+  return v;
+}
+
+/* ── Admin: Upload one or many PDFs (auto-extract + auto-index) ────── */
+function setKbStatus(msg){
+  document.querySelectorAll('.pdf-status-target').forEach(el=>{el.innerText=msg;});
+}
+async function extractPdfPages(file){
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  const pages=[];
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const content=await page.getTextContent();
+    pages.push({page:i,text:content.items.map(it=>it.str).join(' ')});
+  }
+  return pages;
+}
+async function handlePdfUpload(input){
+  const files=Array.from(input.files||[]); if(!files.length) return;
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  for(const f of files){
+    setKbStatus(`⏳ Reading "${f.name}"... please wait`);
+    try{
+      const pages=await extractPdfPages(f);
+      const existingIdx=MANUALS.findIndex(m=>m.name===f.name);
+      const record={
+        id:(existingIdx>-1&&MANUALS[existingIdx].id)?MANUALS[existingIdx].id:'MAN-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+        name:f.name, pages, uploaded:new Date().toLocaleDateString('en-GB')
+      };
+      buildManualIndex(record);
+      if(existingIdx>-1){ MANUALS[existingIdx]=record; }   // same filename → auto-replace
+      else { MANUALS.push(record); }
+      saveManuals();
+      setKbStatus(`✓ "${f.name}" indexed · ${pages.length} pages ready for AI search`);
+      showToast((existingIdx>-1?'✓ Manual replaced: ':'✓ Manual uploaded: ')+f.name);
+      renderManualList();
+      syncManualToSheet(record);   // best-effort backend sync (no-op if URL not configured)
+    }catch(e){
+      setKbStatus(`⚠️ Could not read "${f.name}". Try another file.`);
+      console.warn(e);
+    }
+  }
+  input.value='';
+}
+
+/* ── Admin: Replace a single manual (re-upload over an existing one) ── */
+function triggerReplace(i){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='application/pdf';
+  inp.onchange=async ()=>{
+    const f=inp.files[0]; if(!f) return;
+    if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+    setKbStatus(`⏳ Replacing "${MANUALS[i].name}"...`);
+    try{
+      const pages=await extractPdfPages(f);
+      const record={id:MANUALS[i].id,name:f.name,pages,uploaded:new Date().toLocaleDateString('en-GB')};
+      buildManualIndex(record);
+      MANUALS[i]=record;
+      saveManuals();
+      setKbStatus(`✓ Replaced with "${f.name}" · ${pages.length} pages`);
+      showToast('✓ Manual replaced');
+      renderManualList();
+      syncManualToSheet(record);
+    }catch(e){
+      setKbStatus('⚠️ Could not read PDF. Try another file.');
+      console.warn(e);
+    }
+  };
+  inp.click();
+}
+
+/* ── Admin: View + Delete manuals ─────────────────────────────────── */
+function renderManualList(){
+  const targets=document.querySelectorAll('.manual-list-target');
+  if(!targets.length) return;
+  const html=MANUALS.length?MANUALS.map((m,i)=>`
+    <div class="row-card" style="margin-bottom:8px;padding:12px 14px">
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--red-s);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📕</div>
+      <div class="grow">
+        <div class="b t-sm">${m.name}</div>
+        <div class="t-xs" style="color:var(--muted)">${(m.pages||[]).length} pages · ${(m.chunks||[]).length} chunks · uploaded ${m.uploaded}</div>
+        <span class="pill ${m.chunks&&m.chunks.length?'pill-green':'pill-amber'}" style="margin-top:6px">${m.chunks&&m.chunks.length?'Indexed':'Not indexed'}</span>
+      </div>
+      <button class="icon-btn" style="width:34px;height:34px" onclick="triggerReplace(${i})" title="Replace">🔁</button>
+      <button class="icon-btn" style="width:34px;height:34px" onclick="removeManual(${i})" title="Delete">🗑</button>
+    </div>`).join(''):'<div class="t-sm" style="color:var(--muted)">No manuals uploaded yet</div>';
+  targets.forEach(el=>{el.innerHTML=html;});
+}
+function removeManual(i){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  const m=MANUALS[i];
+  MANUALS.splice(i,1);
+  saveManuals();
+  renderManualList();
+  showToast('Manual removed');
+  if(m) deleteManualFromSheet(m);
+}
+
+/* ── RAG QUERY ENGINE — search across ALL manuals, combine results ──
+   Supports: natural language, part numbers, machine/component/error-code
+   search, synonyms, and typo tolerance. Returns null if nothing relevant.
+*/
+function queryKnowledgeBase(query,topN){
+  if(!query || (!MANUALS.length && !KB_ENTRIES.length)) return null;
+  const rawTokens=kbTokenize(query);
+  if(!rawTokens.length) return null;
+  const vocab=kbVocabulary();
+  const tokens=expandQueryTokens(rawTokens,vocab);
+  const qVec={}; tokens.forEach(t=>{qVec[t]=(qVec[t]||0)+1;});
+  let qMag=0; for(const k in qVec) qMag+=qVec[k]*qVec[k]; qMag=Math.sqrt(qMag)||1;
+
+  const results=[];
+
+  // 1) Search the plain Google-Sheet knowledge base ("ManualKB") — structured
+  //    entries score higher since Problem/Cause/Solution are already exact.
+  KB_ENTRIES.forEach(en=>{
+    if(!en.vec) buildEntryIndex(en);
+    const sim=cosineSim(qVec,qMag,en.vec,en.mag);
+    const low=[en.problem,en.machine,en.category].filter(Boolean).join(' ').toLowerCase();
+    let exact=0; rawTokens.forEach(t=>{ if(low.includes(t)) exact+=0.2; });
+    const score=sim+exact+0.05;   // small boost — structured sheet answers are more reliable than raw PDF text
+    if(score>0.06) results.push({type:'entry',entry:en,text:en.problem+' '+en.solution,score});
+  });
+
+  // 1b) Search the "Troubleshooting" Google Sheet (Excel-style Q&A rows:
+  //     Machine | Problem | Cause | Remedy). These are hand-verified fixes,
+  //     so they get the HIGHEST boost — an exact troubleshooting row always
+  //     beats a fuzzy PDF match.
+  TS_ENTRIES.forEach(en=>{
+    if(!en.vec) buildEntryIndex(en);
+    const sim=cosineSim(qVec,qMag,en.vec,en.mag);
+    const low=[en.problem,en.machine,en.cause].filter(Boolean).join(' ').toLowerCase();
+    let exact=0; rawTokens.forEach(t=>{ if(low.includes(t)) exact+=0.25; });
+    const score=sim+exact+0.08;
+    if(score>0.06) results.push({type:'entry',entry:en,text:en.problem+' '+en.solution,score});
+  });
+
+  // 2) Search PDF manual chunks
+  MANUALS.forEach(m=>{
+    (m.chunks||[]).forEach(c=>{
+      const sim=cosineSim(qVec,qMag,c.vec,c.mag);
+      // also reward exact substring hits (helps part numbers / error codes)
+      const low=c.text.toLowerCase();
+      let exact=0; rawTokens.forEach(t=>{ if(low.includes(t)) exact+=0.15; });
+      const score=sim+exact;
+      if(score>0.12) results.push({type:'pdf',manual:m.name,page:c.page,text:c.text,score});
+    });
+  });
+
+  if(!results.length) return null;
+  results.sort((a,b)=>b.score-a.score);
+  // Quality gate: if even the BEST match is weak, return null so the
+  // chatbot asks a clarifying question instead of inventing an answer
+  // from barely-related text (e.g. matching only a filename or one word).
+  if(results[0].score<0.18) return null;
+  const top=results.slice(0,topN||4);
+  const manualsUsed=[...new Set(top.filter(r=>r.type==='pdf').map(r=>r.manual))];
+  return {chunks:top,manuals:manualsUsed};
+}
+
+/* ── Extract structured fields from matched manual text (never invents) ── */
+function extractField(text,patterns){
+  for(const re of patterns){
+    const m=text.match(re);
+    if(m) return (m[1]||m[0]).trim();
+  }
+  return '';
+}
+function extractSteps(text){
+  const cleanedFull=cleanManualText(text);
+  const stepMatches=[...cleanedFull.matchAll(/(?:^|\s)(\d{1,2}[\.\)])\s?([^0-9][^.\d]{4,140}?)(?=(?:\s\d{1,2}[\.\)])|$)/g)];
+  let steps;
+  if(stepMatches.length>=2){
+    steps=stepMatches.map(m=>stripHeaderNoise(m[2].trim()).replace(/[.;,]+$/,''));
+  }else{
+    // fallback: split the passage into short sentences as pseudo-steps
+    steps=cleanedFull.split(/(?<=[.!?])\s+/).map(s=>stripHeaderNoise(s.trim()));
+  }
+  return steps.filter(s=>s && !looksLikeHeading(s)).slice(0,8);
+}
+/* Natural, conversational answer — like a real technician explaining the
+   fix directly. No page numbers, no manual-name citations, no "not found
+   in manual" style meta-labels. Only shows sections that actually have
+   real content extracted from the knowledge base. */
+function formatRagAnswer(query,result){
+  const te=LANG==='te';
+  const primary=result.chunks[0];
+
+  const L=te?{
+    intro:'ఇక్కడ దీన్ని ఎలా పరిష్కరించాలో ఉంది:',
+    cause:'🔍 దీనికి కారణం',
+    safety:'⚠️ భద్రతా జాగ్రత్తలు',
+    tools:'🔧 కావాల్సిన పరికరాలు',
+    spares:'📦 స్పేర్ పార్ట్స్'
+  }:{
+    intro:"Here's how to fix it, step by step:",
+    cause:'🔍 Likely cause',
+    safety:'⚠️ Safety first',
+    tools:'🔧 Tools you\'ll need',
+    spares:'📦 Spare parts'
+  };
+
+  // 1) Sheet-entry answers are already structured (exact, no guessing)
+  if(primary.type==='entry'){
+    const en=primary.entry;
+    const stepLines=String(en.steps||'').split(/\r?\n|(?:(?<=\.)\s+(?=\d+[\.\)]))/).map(s=>s.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);
+    let html=`${L.intro}<br><br>`;
+    if(en.cause) html+=`<b>${L.cause}:</b> ${en.cause}<br><br>`;
+    if(stepLines.length){
+      html+=stepLines.map((s,i)=>`${i+1}. ${s}`).join('<br>');
+    }else if(en.solution){
+      html+=en.solution;
+    }
+    if(en.safety) html+=`<br><br><b>${L.safety}:</b> ${en.safety}`;
+    if(en.tools) html+=`<br><br><b>${L.tools}:</b> ${en.tools}`;
+    if(en.spares) html+=`<br><b>${L.spares}:</b> ${en.spares}`;
+    return html;
+  }
+
+  // 2) PDF chunk answers — extract structured fields with regex (best effort)
+  const primaryClean=cleanManualText(primary.text);
+  const combinedText=cleanManualText([primary.text,...result.chunks.slice(1).filter(c=>c.type==='pdf').map(c=>c.text)].join(' '));
+  const cause=extractField(primaryClean,[/cause[s]?\s*[:\-]\s*([^.]{5,160})/i,/due to\s+([^.]{5,160})/i,/reason[s]?\s*[:\-]\s*([^.]{5,160})/i]);
+  const solutionRaw=extractField(primaryClean,[/solution\s*[:\-]\s*([^.]{5,200})/i,/procedure\s*[:\-]\s*([^.]{5,200})/i]) || primaryClean.slice(0,260).trim();
+  const tools=extractField(primaryClean,[/tool[s]?\s*(?:required|needed)?\s*[:\-]\s*([^.]{3,150})/i]);
+  const spares=extractField(primaryClean,[/(?:spare part|part no\.?|p\/n)\s*[:\-]?\s*([A-Za-z0-9\-\/]{3,40})/i]);
+  const safety=extractField(combinedText,[/safety[^:.]*[:\-]\s*([^.]{5,180})/i,/caution\s*[:\-]\s*([^.]{5,180})/i,/warning\s*[:\-]\s*([^.]{5,180})/i]);
+  const steps=extractSteps(solutionRaw.length>60?solutionRaw:primaryClean);
+
+  let html=`${L.intro}<br><br>`;
+  if(cause) html+=`<b>${L.cause}:</b> ${cause}<br><br>`;
+  html+=steps.map((s,i)=>`${i+1}. ${s}`).join('<br>');
+  if(safety) html+=`<br><br><b>${L.safety}:</b> ${safety}`;
+  if(tools) html+=`<br><br><b>${L.tools}:</b> ${tools}`;
+  if(spares) html+=`<br><b>${L.spares}:</b> ${spares}`;
+  return html;
+}
+const KB_UNAVAILABLE={
+  en:"I don't have this information yet. Please contact the maintenance team or administrator for help.",
+  te:"నాకు ఈ సమాచారం ఇంకా లేదు. దయచేసి సహాయం కోసం మెయింటెనెన్స్ టీమ్ లేదా అడ్మినిస్ట్రేటర్‌ను సంప్రదించండి."
+};
+
+/* ═══════════ GOOGLE SHEETS ═══════════ */
+/* Returns {ok:true} only when the row was actually written to the Google
+   Sheet. Returns {ok:false, reason:'no-url'|'error'} otherwise, so callers
+   can tell the user clearly whether their entry reached the Sheet or was
+   only saved on this device. */
+async function postToSheet(d){
+  if(!APP_SCRIPT_URL || APP_SCRIPT_URL.includes('PASTE_YOUR')) return {ok:false,reason:'no-url'};
+  try{
+    const r=await fetch(APP_SCRIPT_URL,{method:'POST',body:JSON.stringify(d)});
+    const res=await r.json().catch(()=>null);
+    if(res && res.ok) return {ok:true};
+    return {ok:false,reason:'error'};
+  }catch(e){
+    console.warn('postToSheet failed:',e);
+    return {ok:false,reason:'error'};
+  }
+}
+async function loadFromSheet(){
+  if(!APP_SCRIPT_URL || APP_SCRIPT_URL.includes('PASTE_YOUR')) return;
+  const backup=BREAKDOWNS.slice();   // ← keep demo/local data as fallback
+  try{
+    const r=await fetch(APP_SCRIPT_URL+'?action=getAll');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d && Array.isArray(d.breakdowns) && d.breakdowns.length){
+      BREAKDOWNS=d.breakdowns;
+    } else {
+      BREAKDOWNS=backup;   // ← restore fallback on empty/bad payload
+      console.warn('Sheet returned no breakdowns — using local data.');
+    }
+    // Pull the "ShiftRoster" sheet — today's duty supervisors (set by admin
+    // either in the app or directly in the sheet). Sheet wins over local.
+    if(d && Array.isArray(d.shiftRoster)){
+      d.shiftRoster.forEach(r=>{
+        const date=String(r.Date||r.date||'').split('T')[0];
+        const shift=String(r.Shift||r.shift||'').trim().toUpperCase();
+        if(!date||!['A','B','C'].includes(shift))return;
+        if(!DUTY_ROSTER[date])DUTY_ROSTER[date]={};
+        DUTY_ROSTER[date][shift]={
+          mech:String(r.MechName||r.mechName||''),mechCode:String(r.MechCode||r.mechCode||''),
+          elec:String(r.ElecName||r.elecName||''),elecCode:String(r.ElecCode||r.elecCode||'')
+        };
+      });
+      saveDutyLocal();
+    }
+    // Pull the "Troubleshooting" sheet (Machine | Problem | Cause | Remedy).
+    // Sheet is the single source of truth — replaces local copy every sync,
+    // so pasting new Excel rows into the tab teaches the chatbot instantly.
+    if(d && Array.isArray(d.troubleshooting) && d.troubleshooting.length){
+      TS_ENTRIES=d.troubleshooting
+        .filter(r=>r && (r.Problem||r.problem))
+        .map((r,i)=>({
+          id:'TS-'+(i+1),
+          machine:String(r.Machine||r.machine||''),
+          category:'Troubleshooting',
+          problem:String(r.Problem||r.problem||''),
+          cause:String(r.Cause||r.cause||''),
+          solution:String(r.Remedy||r.remedy||r.Solution||r.solution||''),
+          steps:String(r.Remedy||r.remedy||r.Solution||r.solution||''),
+          safety:String(r.Safety||r.safety||''),
+          tools:'',spares:''
+        }));
+      TS_ENTRIES.forEach(buildEntryIndex);
+      saveTsEntries();
+    }
+    // Pull the live Machines master list ("Machines" tab: Area | Line | Machine).
+    // BUG FIX v1.5: always rebuild AREAS_DATA when the sheet returns data —
+    // even if you renamed / deleted rows in the sheet. Previously the app
+    // only updated when the array was non-empty AND had valid rows, so
+    // renames stuck at the old cached values.
+    if(d && Array.isArray(d.machines)){
+      const newData=[];
+      d.machines.forEach(row=>{
+        // Flexible column names: Area/area/AREA all accepted
+        const area=String(row.Area||row.area||row.AREA||'General').trim()||'General';
+        const line=String(row.Line||row.line||row.LINE||'').trim();
+        const mc=String(row.Machine||row.machine||row.MACHINE||row.machine_name||'').trim();
+        if(!line||!mc) return;                       // skip blank rows
+        if(!newData.some(r=>r.area===area&&r.line===line&&r.machine===mc)) newData.push({area,line,machine:mc}); // dedupe
+      });
+      if(newData.length){
+        AREAS_DATA=newData;
+        applyAreaFilter();       // rebuild LINES/MACHINES for this user's area
+        renderDash();            // force dashboard repaint so new/renamed machines show immediately
+        console.log('[v1.5] Machines synced from sheet:',newData.length,'rows');
+      }else{
+        console.warn('[v1.5] Machines sheet returned 0 valid rows — check that Area/Line/Machine columns are filled.');
+      }
+    }
+    // Pull the live Materials sheet (Part_Number, Item_Description, Machine,
+    // Location, Stock_Qty, Price, Category) so Material Search always
+    // reflects real stock/price data instead of only the local demo list.
+    if(d && Array.isArray(d.materials) && d.materials.length){
+      MATS=d.materials.map(mat=>({
+        // String() everywhere — Google Sheets returns numbers for numeric
+        // cells (e.g. part number "262030"), and .split()/.toLowerCase()
+        // would crash on a raw number, silently breaking the search.
+        p:String(mat.p||mat.Part_Number||''), n:String(mat.n||mat.Item_Description||''),
+        m:String(mat.m||mat.Machine||''), l:String(mat.l||mat.Location||''),
+        q:(mat.q!==undefined&&mat.q!=='')?mat.q:(mat.Stock_Qty!==undefined?mat.Stock_Qty:''),
+        pr:(mat.pr!==undefined&&mat.pr!=='')?mat.pr:(mat.Price!==undefined?mat.Price:''),
+        c:String(mat.c||mat.Category||''), img:String(mat.img||mat.Reference_Image||'')
+      })).filter(mat=>mat.p||mat.n);   // skip fully blank sheet rows
+      const matScreenActive=document.getElementById('screen-materials')&&document.getElementById('screen-materials').classList.contains('active');
+      if(matScreenActive){ const si=document.getElementById('matSearchInput'); if(si) renderMats(si.value); }
+    }
+    // Merge any manuals stored centrally in the backend (shared knowledge base
+    // across all users/devices) with locally uploaded manuals. Existing local
+    // manuals are never lost; the backend copy is only used to fill gaps.
+    if(d && Array.isArray(d.manuals) && d.manuals.length){
+      d.manuals.forEach(rm=>{
+        if(!rm || !rm.id) return;
+        const exists=MANUALS.some(m=>m.id===rm.id);
+        if(!exists) MANUALS.push({id:rm.id,name:rm.name,uploaded:rm.uploaded,pages:rm.pages||[]});
+      });
+      saveManuals();
+    }
+    // Pull the plain Google-Sheet knowledge base ("ManualKB" tab). The sheet
+    // is always the source of truth for these entries — the app refreshes
+    // its local copy every sync so admin edits made directly in Google
+    // Sheets show up automatically (no code change needed).
+    if(d && Array.isArray(d.manualEntries)){
+      // Rows that came back from the sheet are confirmed synced. Keep any
+      // locally-added rows that haven't synced yet (synced:false) so they
+      // aren't lost if this refresh happens before their upload finishes.
+      const pendingLocal=KB_ENTRIES.filter(en=>en.synced===false);
+      const fromSheet=d.manualEntries.filter(en=>en && en.id).map(en=>({
+        id:en.id, machine:en.machine||'', category:en.category||'',
+        problem:en.problem||'', cause:en.cause||'', solution:en.solution||'',
+        steps:en.steps||'', safety:en.safety||'', tools:en.tools||'', spares:en.spares||'',
+        updated:en.updated||'', synced:true
+      }));
+      const fromSheetIds=new Set(fromSheet.map(en=>en.id));
+      KB_ENTRIES=[...fromSheet,...pendingLocal.filter(en=>!fromSheetIds.has(en.id))];
+      rebuildEntryIndexes();
+      saveKbEntries();
+      renderKbEntryList();
+    }
+    // Sync employee approval status + single-device lock from the Employees
+    // sheet — this is what lets an admin approve/reject/release a device
+    // from any browser and have it apply everywhere. Also grows the
+    // Technician dropdown as new employees get approved.
+    if(d && Array.isArray(d.employees)){
+      d.employees.forEach(emp=>{
+        if(!emp || !emp.code) return;
+        const code=String(emp.code);
+        LOCAL_ACCESS[code]=LOCAL_ACCESS[code]||{};
+        LOCAL_ACCESS[code].name=emp.name||LOCAL_ACCESS[code].name;
+        LOCAL_ACCESS[code].status=emp.status||LOCAL_ACCESS[code].status||'Approved';
+        LOCAL_ACCESS[code].deviceId=(emp.deviceId!==undefined&&emp.deviceId!==null)?emp.deviceId:LOCAL_ACCESS[code].deviceId;
+        LOCAL_ACCESS[code].admin=emp.admin===true||emp.admin==='TRUE';
+        LOCAL_ACCESS[code].area=(emp.area!==undefined&&emp.area!==null)?String(emp.area).trim():(LOCAL_ACCESS[code].area||'');
+        // If the sheet changed THIS user's area, apply it live
+        if(currentUser && currentUser.code===code && currentUser.area!==LOCAL_ACCESS[code].area){
+          currentUser.area=LOCAL_ACCESS[code].area;
+          try{ localStorage.setItem('mv_current_user',JSON.stringify(currentUser)); }catch(e){}
+          applyAreaFilter();
+        }
+        if(LOCAL_ACCESS[code].status==='Approved' && !LOCAL_ACCESS[code].admin){
+          const techCode='EMP-'+code.slice(-4);
+          if(!TECHNICIANS.some(t=>t.code===techCode)){
+            TECHNICIANS.push({name:LOCAL_ACCESS[code].name||('Employee '+code),code:techCode,dept:emp.dept||'',desig:emp.designation||'Technician'});
+          }
+        }
+      });
+      saveLocalAccess();
+      if(currentUser&&currentUser.admin) renderAdminPanel();
+    }
+    ensureManualsIndexed();
+    renderDash();
+  }catch(e){
+    BREAKDOWNS=backup;
+    console.warn('loadFromSheet failed:',e);
+    renderDash();
+  }
+}
+
+/* ── Knowledge Base ⇄ backend sync hooks (best-effort, non-blocking) ──
+   Uses the EXISTING Apps Script backend/endpoint (Code.gs). ────────── */
+const KB_CLEAN_VERSION=3;   // bump whenever text-cleaning logic changes, to force a silent re-index
+function ensureManualsIndexed(){
+  const staleVersion=localStorage.getItem('mv_kb_clean_version')!==String(KB_CLEAN_VERSION);
+  const needsIndex=staleVersion||MANUALS.some(m=>!m.chunks||!m.chunks.length)||KB_ENTRIES.some(en=>!en.vec)||TS_ENTRIES.some(en=>!en.vec);
+  if(needsIndex){
+    rebuildAllIndexes(false);
+    TS_ENTRIES.forEach(buildEntryIndex);   // index Troubleshooting sheet rows too
+    localStorage.setItem('mv_kb_clean_version',String(KB_CLEAN_VERSION));
+  }
+}
+async function syncManualToSheet(manual){
+  await postToSheet({action:'addManual',id:manual.id,name:manual.name,uploaded:manual.uploaded,pages:manual.pages});
+}
+async function deleteManualFromSheet(manual){
+  await postToSheet({action:'deleteManual',id:manual.id});
+}
+
+/* ── ManualKB (Google Sheet) — Admin add/view/delete entries ─────────
+   Admin can either fill this quick form (synced to the sheet instantly)
+   OR just type a new row directly into the "ManualKB" tab in Google
+   Sheets — both are read by the AI the same way. */
+async function submitKbEntry(){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  const get=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  const problem=get('kbProblem');
+  if(!problem){showToast('⚠️ Enter the problem description');return;}
+  const entry={
+    id:'KB-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+    machine:get('kbMachine'), category:get('kbCategory'), problem,
+    cause:get('kbCause'), solution:get('kbSolution'), steps:get('kbSteps'),
+    safety:get('kbSafety'), tools:get('kbTools'), spares:get('kbSpares'),
+    updated:new Date().toISOString(),
+    synced:false   // becomes true only once Google Sheets confirms the row was written
+  };
+  buildEntryIndex(entry);
+  KB_ENTRIES.unshift(entry);
+  saveKbEntries();
+  renderKbEntryList();
+
+  const btn=document.querySelector('button[onclick="submitKbEntry()"]');
+  const original=btn?btn.innerHTML:null;
+  if(btn){ btn.innerHTML='<div class="typing-dots" style="justify-content:center"><span></span><span></span><span></span></div>'; btn.disabled=true; }
+
+  const result=await postToSheet({action:'addManualEntry',id:entry.id,Machine:entry.machine,Category:entry.category,Problem:entry.problem,Cause:entry.cause,Solution:entry.solution,Steps:entry.steps,Safety:entry.safety,Tools:entry.tools,Spares:entry.spares});
+
+  if(btn){ btn.innerHTML=original; btn.disabled=false; }
+  ['kbMachine','kbCategory','kbProblem','kbCause','kbSolution','kbSteps','kbSafety','kbTools','kbSpares'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+
+  if(result.ok){
+    entry.synced=true;
+    saveKbEntries();
+    renderKbEntryList();
+    showToast('✅ Row added to the "ManualKB" tab in Google Sheets');
+  }else if(result.reason==='no-url'){
+    showToast('⚠️ Saved on this device only — add your Apps Script URL in Profile to sync to Google Sheets','warn');
+  }else{
+    showToast('⚠️ Could not reach Google Sheets — saved locally, will not auto-retry','warn');
+  }
+}
+function renderKbEntryList(){
+  const targets=document.querySelectorAll('.kb-entry-list-target');
+  if(!targets.length) return;
+  const html=KB_ENTRIES.length?KB_ENTRIES.map((en,i)=>`
+    <div class="row-card" style="margin-bottom:8px;padding:12px 14px">
+      <div style="width:40px;height:40px;border-radius:11px;background:var(--blue-s);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📘</div>
+      <div class="grow">
+        <div class="b t-sm">${en.problem||'(untitled)'}</div>
+        <div class="t-xs" style="color:var(--muted)">${en.machine||'—'} · ${en.category||'—'}</div>
+        <span class="pill ${en.synced?'pill-green':'pill-amber'}" style="margin-top:6px">${en.synced?'✓ In Google Sheet':'⏳ Local only'}</span>
+      </div>
+      ${!en.synced?`<button class="icon-btn" style="width:34px;height:34px" onclick="retrySyncKbEntry(${i})" title="Retry sync to Sheet">🔄</button>`:''}
+      <button class="icon-btn" style="width:34px;height:34px" onclick="deleteKbEntry(${i})" title="Delete">🗑</button>
+    </div>`).join(''):'<div class="t-sm" style="color:var(--muted)">No Google Sheet knowledge entries yet</div>';
+  targets.forEach(el=>{el.innerHTML=html;});
+}
+async function retrySyncKbEntry(i){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  const en=KB_ENTRIES[i]; if(!en) return;
+  showToast('⏳ Syncing to Google Sheets…');
+  const result=await postToSheet({action:'addManualEntry',id:en.id,Machine:en.machine,Category:en.category,Problem:en.problem,Cause:en.cause,Solution:en.solution,Steps:en.steps,Safety:en.safety,Tools:en.tools,Spares:en.spares});
+  if(result.ok){
+    en.synced=true; saveKbEntries(); renderKbEntryList();
+    showToast('✅ Row added to Google Sheets');
+  }else if(result.reason==='no-url'){
+    showToast('⚠️ No Apps Script URL configured yet','warn');
+  }else{
+    showToast('⚠️ Still could not reach Google Sheets','warn');
+  }
+}
+async function deleteKbEntry(i){
+  if(!currentUser||!currentUser.admin){showToast('⚠️ Admin access only');return;}
+  const en=KB_ENTRIES[i];
+  KB_ENTRIES.splice(i,1);
+  saveKbEntries();
+  renderKbEntryList();
+  showToast('Entry removed');
+  if(en){
+    const result=await postToSheet({action:'deleteManualEntry',id:en.id});
+    if(!result.ok && result.reason!=='no-url') showToast('⚠️ Removed locally, but could not remove from Google Sheets — delete row manually if needed','warn');
+  }
+}
+</script>
+</body>
+</html>
